@@ -13,6 +13,9 @@ class Vehicle extends Model
     protected $fillable = [
         'class',
         'gearbox',
+        'year',
+        'color',
+        'license_plate',
         'make',
         'model',
         'max_passengers',

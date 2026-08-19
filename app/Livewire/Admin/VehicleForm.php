@@ -23,6 +23,11 @@ class VehicleForm extends Component
     public $make;
     public $model;
     public $year;
+    public $color;
+    public $class;
+    public $max_passengers;
+    public $fuel_type;
+    public $gearbox;
     public $license_plate;
     public $daily_rate;
     public $status = 'available'; // Default status
@@ -46,6 +51,11 @@ class VehicleForm extends Component
             $this->make = $vehicle->make;
             $this->model = $vehicle->model;
             $this->year = $vehicle->year;
+            $this->color = $vehicle->color;
+            $this->class = $vehicle->class;
+            $this->max_passengers = $vehicle->max_passengers;
+            $this->fuel_type = $vehicle->fuel_type;
+            $this->gearbox = $vehicle->gearbox;
             $this->license_plate = $vehicle->license_plate;
             $this->daily_rate = $vehicle->daily_rate;
             $this->status = $vehicle->status;
@@ -72,6 +82,11 @@ class VehicleForm extends Component
             'make' => 'required|string|max:255',
             'model' => 'required|string|max:255',
             'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
+            'color' => 'required|string|max:255',
+            'class' => 'required|string|max:255',
+            'max_passengers' => 'required|integer|min:1|max:100',
+            'fuel_type' => 'required|string|max:255',
+            'gearbox' => 'required|string|max:255',
             'license_plate' => 'required|string|max:255',
             'daily_rate' => 'required|numeric|min:0',
             'status' => 'required|in:available,maintenance',
@@ -86,6 +101,11 @@ class VehicleForm extends Component
                 'make' => $this->make,
                 'model' => $this->model,
                 'year' => $this->year,
+                'color' => $this->color,
+                'class' => $this->class,
+                'max_passengers' => $this->max_passengers,
+                'fuel_type' => $this->fuel_type,
+                'gearbox' => $this->gearbox,
                 'license_plate' => $this->license_plate,
                 'daily_rate' => $this->daily_rate,
                 'status' => $this->status,
@@ -97,6 +117,11 @@ class VehicleForm extends Component
                 'make' => $this->make,
                 'model' => $this->model,
                 'year' => $this->year,
+                'color' => $this->color,
+                'class' => $this->class,
+                'max_passengers' => $this->max_passengers,
+                'fuel_type' => $this->fuel_type,
+                'gearbox' => $this->gearbox,
                 'license_plate' => $this->license_plate,
                 'daily_rate' => $this->daily_rate,
                 'status' => $this->status,
