@@ -207,7 +207,7 @@
   Alpine.js component script for handling the HTML5 Canvas drawing.
   We put it outside the main div or inside an x-data block.
 -->
-<script>
+<script defer>
     document.addEventListener('alpine:init', () => {
         console.log('initiated');
         Alpine.data('signaturePad', () => ({
