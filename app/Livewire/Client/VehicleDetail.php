@@ -101,6 +101,6 @@ class VehicleDetail extends Component
 
     public function render()
     {
-        return view('livewire.client.vehicle-detail')->layout('layouts.app');
+        return view('livewire.client.vehicle-detail')->layout('layouts.client');
     }
 }

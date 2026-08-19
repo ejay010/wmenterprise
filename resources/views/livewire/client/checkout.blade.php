@@ -209,6 +209,7 @@
 -->
 <script>
     document.addEventListener('alpine:init', () => {
+        console.log('initiated');
         Alpine.data('signaturePad', () => ({
             isDrawing: false,
             context: null,
