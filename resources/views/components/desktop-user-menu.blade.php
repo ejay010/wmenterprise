@@ -26,7 +26,4 @@
             </flux:menu.radio.group>
         </flux:menu>
     </flux:dropdown>
-@else
-    <flux:button href="{{ route('login') }}" wire:navigate>{{ __('Log in') }}</flux:button>
-    <flux:button href="{{ route('register') }}" wire:navigate>{{ __('Register') }}</flux:button>
 @endauth

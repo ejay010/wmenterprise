@@ -1,20 +1,4 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
-<head>
-    @include('partials.head')
-</head>
-
-<body class="min-h-screen bg-white dark:bg-zinc-800 antialiased">
-    <flux:header container class="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700">
-        <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
-
-        <flux:brand href="#" logo="{{ Vite::asset('resources/images/logo.png') }}" name="W Major Enterprises" />
-        <flux:navbar class="-mb-px max-lg:hidden">
-            <flux:navbar.item>Sign in</flux:navbar.item>
-        </flux:navbar>
-    </flux:header>
-
+<x-layouts::app.header>
     <section id="hero" class="relative overflow-hidden">
         <div class="relative isolate px-6 lg:px-8">
             <div class="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
@@ -39,15 +23,11 @@
                         <a href="{{ route('catalog') }}"
                             class="rounded-md bg-accent px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-accent/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">Browse
                             Vehicles</a>
-                        <a href="tel:242-376-1454" class="text-sm font-semibold leading-6 text-gray-900">Call Us: <span
-                                aria-hidden="true">→</span></a>
+                        <a href="tel:242-376-1454" class="text-sm font-semibold leading-6 text-gray-900">Call Us:
+                            <span aria-hidden="true">→</span></a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-
-    @fluxScripts
-</body>
-
-</html>
+</x-layouts::app.header>

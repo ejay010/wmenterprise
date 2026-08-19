@@ -26,14 +26,14 @@
     --color-coral: #ed6f7c;
 
     --color-accent: var(--color-coral);
-    --color-accent-content: var(--color-white);
+    --color-accent-content: var(--color-coral);
     --color-accent-foreground: var(--color-white);
 }
 
 @layer theme {
     .dark {
         --color-accent: var(--color-coral);
-        --color-accent-content: var(--color-white);
+        --color-accent-content: var(--color-coral);
         --color-accent-foreground: var(--color-neutral-800);
     }
 }
