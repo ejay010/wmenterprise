@@ -20,10 +20,6 @@
                         :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="shopping-bag" :href="route('catalog')"
-                        :current="request()->routeIs('catalog')" wire:navigate>
-                        {{ __('Catalog') }}
-                    </flux:sidebar.item>
                     @if (auth()->check() && auth()->user()->role === 'admin')
                         <flux:sidebar.item icon="truck" :href="route('admin.vehicles.index')"
                             :current="request()->routeIs('admin.vehicles.*')" wire:navigate>
@@ -38,18 +34,6 @@
             </flux:sidebar.nav>
 
             <flux:spacer />
-
-            <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit"
-                    target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire"
-                    target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
-            </flux:sidebar.nav>
 
             @auth
                 <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
