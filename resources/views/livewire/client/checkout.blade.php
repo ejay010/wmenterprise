@@ -11,12 +11,7 @@
         </flux:button>
     </div>
 
-    <!-- 
-      We place x-data="signaturePad()" and @submit="saveSignature" on the <form> element.
-      This ensures both the Canvas drawing section AND the submit button share the same Alpine scope,
-      and saveSignature() runs automatically whenever the form is submitted.
-    -->
-    <form x-data="signaturePad()" @submit="saveSignature" wire:submit="processBooking" class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+    <form wire:submit="processBooking" class="grid grid-cols-1 lg:grid-cols-3 gap-12">
 
         <!-- Left Column: Form Fields -->
         <div class="lg:col-span-2 space-y-10">
@@ -89,8 +84,13 @@
             </section>
 
             <!-- Section 3: Terms & Signature -->
+            <!--
+              We use Alpine.js (x-data="signaturePad()") to manage the HTML5 Canvas logic locally in the browser.
+              This prevents sending hundreds of requests to Livewire as the user draws.
+            -->
             <section
-                class="bg-white dark:bg-zinc-800 p-8 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-sm">
+                class="bg-white dark:bg-zinc-800 p-8 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-sm"
+                x-data="signaturePad()">
                 <flux:heading size="xl" class="mb-6">Terms and Conditions</flux:heading>
 
                 <div
@@ -187,7 +187,12 @@
                     </flux:radio.group>
                 </div>
 
-                <flux:button type="submit" variant="primary" class="w-full">
+                <!--
+                  When clicked, this button triggers wire:submit on the form.
+                  Alpine intercepts the click first (@click) to extract the canvas image data
+                  and update the Livewire property ($wire.set) before it submits.
+                -->
+                <flux:button type="submit" variant="primary" class="w-full" @click="saveSignature">
                     Confirm & Pay
                 </flux:button>
                 <p class="text-xs text-center text-zinc-400 mt-4 flex items-center justify-center gap-1">

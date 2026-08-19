@@ -20,6 +20,6 @@ class VehicleCatalog extends Component
         // We use a custom guest layout (usually 'layouts.guest' or a custom frontend layout)
         return view('livewire.client.vehicle-catalog', [
             'vehicles' => $vehicles,
-        ])->layout('layouts.app'); // We stick with layouts.app for simplicity in this MVP.
+        ])->layout('layouts.app.header'); // We stick with layouts.app for simplicity in this MVP.
     }
 }
