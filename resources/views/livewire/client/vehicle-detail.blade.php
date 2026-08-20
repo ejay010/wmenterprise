@@ -5,7 +5,7 @@
 @php
     // Prepare the list of all images for the vehicle (featured image first, then additional images)
     $allImages = $vehicle->images->sortByDesc('is_featured')->values();
-    $imageUrls = $allImages->map(fn($img) => asset('storage/' . $img->image_path))->toArray();
+    $imageUrls = $allImages->map(fn($img) => $img->url)->toArray();
     
     // Fallback if no images exist
     if (empty($imageUrls)) {

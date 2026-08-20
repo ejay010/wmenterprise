@@ -26,7 +26,7 @@
                         // Fetch the featured image or fallback to a placeholder
                         $featuredImage = $vehicle->images->where('is_featured', true)->first();
                         $imagePath = $featuredImage
-                            ? asset('storage/' . $featuredImage->image_path)
+                            ? $featuredImage->url
                             : 'https://placehold.co/600x400?text=No+Image';
                     @endphp
                     <img src="{{ $imagePath }}" alt="{{ $vehicle->make }} {{ $vehicle->model }}"

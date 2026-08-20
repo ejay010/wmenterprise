@@ -143,9 +143,13 @@ class VehicleForm extends Component
         }
 
         // 3. Process newly uploaded images
+        $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
         foreach ($this->new_images as $photo) {
-            // Store the file in the 'public/vehicles' storage disk
-            $path = $photo->store('vehicles', 'public');
+            // Store the file in the configured storage disk with public visibility
+            $path = $photo->store('vehicles', [
+                'disk' => $disk,
+                'visibility' => 'public',
+            ]);
 
             // Create a database record linking the image to the vehicle
             $image = $this->vehicle->images()->create([
@@ -199,8 +203,9 @@ class VehicleForm extends Component
         $image = VehicleImage::find($imageId);
 
         if ($image && $image->vehicle_id === $this->vehicle->id) {
-            // Delete the physical file from the disk
-            Storage::disk('public')->delete($image->image_path);
+            // Delete the physical file from the configured disk
+            $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
+            Storage::disk($disk)->delete($image->image_path);
 
             // Delete the database record
             $image->delete();

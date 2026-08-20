@@ -48,7 +48,7 @@
                             @php
                                 $featuredImage = $vehicle->images->where('is_featured', true)->first();
                                 $imagePath = $featuredImage
-                                    ? asset('storage/' . $featuredImage->image_path)
+                                    ? $featuredImage->url
                                     : 'https://placehold.co/100x60?text=No+Image';
                             @endphp
                             <div class="w-16 h-10 rounded overflow-hidden bg-gray-100 dark:bg-gray-800">

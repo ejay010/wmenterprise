@@ -86,7 +86,7 @@
                         @foreach ($existing_images as $image)
                             <div
                                 class="relative rounded-lg overflow-hidden border {{ $featured_image_id === $image->id ? 'border-primary-500 ring-2 ring-primary-500' : 'border-zinc-200 dark:border-zinc-700' }} aspect-video group">
-                                <img src="{{ asset('storage/' . $image->image_path) }}"
+                                <img src="{{ $image->url }}"
                                     class="w-full h-full object-cover">
 
                                 <!-- Overlay container for actions on hover -->

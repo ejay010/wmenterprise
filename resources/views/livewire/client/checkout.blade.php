@@ -151,7 +151,7 @@
                         @php
                             $featuredImage = $vehicle->images->where('is_featured', true)->first();
                             $imagePath = $featuredImage
-                                ? asset('storage/' . $featuredImage->image_path)
+                                ? $featuredImage->url
                                 : 'https://placehold.co/100x60?text=No+Image';
                         @endphp
                         <img src="{{ $imagePath }}" class="w-full h-full object-cover">
