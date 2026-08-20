@@ -145,11 +145,8 @@ class VehicleForm extends Component
         // 3. Process newly uploaded images
         $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
         foreach ($this->new_images as $photo) {
-            // Store the file in the configured storage disk with public visibility
-            $path = $photo->store('vehicles', [
-                'disk' => $disk,
-                'visibility' => 'public',
-            ]);
+            // Store the file in the configured storage disk
+            $path = $photo->store('vehicles', $disk);
 
             // Create a database record linking the image to the vehicle
             $image = $this->vehicle->images()->create([
