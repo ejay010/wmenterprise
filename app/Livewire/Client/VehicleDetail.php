@@ -7,20 +7,22 @@ use Carbon\Carbon;
 use Livewire\Component;
 
 /**
- * The VehicleDetail component shows the full details of a vehicle and 
+ * The VehicleDetail component shows the full details of a vehicle and
  * provides a dynamic quote calculator based on selected dates.
  */
 class VehicleDetail extends Component
 {
     // The vehicle model being viewed
     public Vehicle $vehicle;
-    
+
     // User input fields for the date picker
     public $pickup_date;
+
     public $return_date;
 
     // The calculated cost
     public $total_estimate = 0;
+
     public $days = 0;
 
     /**
@@ -29,11 +31,11 @@ class VehicleDetail extends Component
     public function mount(Vehicle $vehicle)
     {
         $this->vehicle = $vehicle;
-        
+
         // We set default dates: pick up tomorrow, return the day after
         $this->pickup_date = Carbon::tomorrow()->format('Y-m-d');
         $this->return_date = Carbon::tomorrow()->addDays(2)->format('Y-m-d');
-        
+
         // Calculate the initial quote
         $this->calculateQuote();
     }
@@ -58,7 +60,7 @@ class VehicleDetail extends Component
             try {
                 $start = Carbon::parse($this->pickup_date)->startOfDay();
                 $end = Carbon::parse($this->return_date)->startOfDay();
-                
+
                 // Ensure the return date is after the pick up date
                 if ($end->greaterThan($start)) {
                     $this->days = $start->diffInDays($end);

@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\RentalAgreementFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class RentalAgreement extends Model
 {
-    /** @use HasFactory<\Database\Factories\RentalAgreementFactory> */
+    /** @use HasFactory<RentalAgreementFactory> */
     use HasFactory;
 
     protected $fillable = [

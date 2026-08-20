@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\VehicleImageFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class VehicleImage extends Model
 {
-    /** @use HasFactory<\Database\Factories\VehicleImageFactory> */
+    /** @use HasFactory<VehicleImageFactory> */
     use HasFactory;
 
     protected $fillable = [

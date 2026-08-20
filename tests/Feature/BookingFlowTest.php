@@ -64,7 +64,7 @@ it('allows a user to complete the checkout process', function () {
     $this->assertDatabaseHas('orders', [
         'vehicle_id' => $vehicle->id,
         'guest_email' => 'john@example.com',
-        'status' => 'confirmed'
+        'status' => 'confirmed',
     ]);
 
     $this->assertDatabaseHas('rental_agreements', [

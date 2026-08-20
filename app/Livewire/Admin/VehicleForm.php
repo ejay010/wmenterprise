@@ -21,32 +21,45 @@ class VehicleForm extends Component
 
     // Form fields mapped to the database schema
     public $make;
+
     public $model;
+
     public $year;
+
     public $color;
+
     public $class;
+
     public $max_passengers;
+
     public $fuel_type;
+
     public $gearbox;
+
     public $license_plate;
+
     public $daily_rate;
+
     public $status = 'available'; // Default status
+
     public $description;
 
     // Variables for handling image uploads
     public $new_images = []; // Temporary array to hold newly uploaded images
+
     public $existing_images = []; // Array to display already uploaded images
+
     public $featured_image_id = null; // Tracks which image is featured
 
     /**
      * The mount method is called once when the component is first loaded.
      * We use it to populate the form if we are editing an existing vehicle.
      */
-    public function mount(Vehicle $vehicle = null)
+    public function mount(?Vehicle $vehicle = null)
     {
         if ($vehicle && $vehicle->exists) {
             $this->vehicle = $vehicle;
-            
+
             // Populate our public properties with the database values
             $this->make = $vehicle->make;
             $this->model = $vehicle->model;
@@ -63,7 +76,7 @@ class VehicleForm extends Component
 
             // Load existing images
             $this->existing_images = $vehicle->images()->get();
-            
+
             // Find the featured image ID
             $featured = $this->existing_images->where('is_featured', true)->first();
             if ($featured) {
@@ -81,7 +94,7 @@ class VehicleForm extends Component
         $this->validate([
             'make' => 'required|string|max:255',
             'model' => 'required|string|max:255',
-            'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
+            'year' => 'required|integer|min:1900|max:'.(date('Y') + 1),
             'color' => 'required|string|max:255',
             'class' => 'required|string|max:255',
             'max_passengers' => 'required|integer|min:1|max:100',
@@ -133,7 +146,7 @@ class VehicleForm extends Component
         foreach ($this->new_images as $photo) {
             // Store the file in the 'public/vehicles' storage disk
             $path = $photo->store('vehicles', 'public');
-            
+
             // Create a database record linking the image to the vehicle
             $image = $this->vehicle->images()->create([
                 'image_path' => $path,
@@ -141,7 +154,7 @@ class VehicleForm extends Component
             ]);
 
             // If no featured image is set yet, make the first uploaded one featured by default
-            if (!$this->featured_image_id) {
+            if (! $this->featured_image_id) {
                 $this->setFeaturedImage($image->id);
             }
         }
@@ -150,26 +163,26 @@ class VehicleForm extends Component
         $this->new_images = [];
 
         // 4. Provide feedback to the user and redirect back to the list
-        $this->dispatch('toast', message: 'Vehicle saved successfully.', type: 'success');
+        \Flux::toast(text: 'Vehicle saved successfully.', variant: 'success');
         $this->redirectRoute('admin.vehicles.index', navigate: true);
     }
 
     /**
      * Mark an image as the featured image for the vehicle.
-     * 
-     * @param int $imageId
+     *
+     * @param  int  $imageId
      */
     public function setFeaturedImage($imageId)
     {
         // First, ensure the vehicle actually has this image
         if ($this->vehicle && $this->vehicle->images()->where('id', $imageId)->exists()) {
-            
+
             // Set all other images for this vehicle to false
             $this->vehicle->images()->update(['is_featured' => false]);
-            
+
             // Set the selected image to true
             $this->vehicle->images()->where('id', $imageId)->update(['is_featured' => true]);
-            
+
             // Update our component's state
             $this->featured_image_id = $imageId;
             $this->existing_images = $this->vehicle->images()->get(); // Refresh list
@@ -178,23 +191,23 @@ class VehicleForm extends Component
 
     /**
      * Delete an existing image from storage and database.
-     * 
-     * @param int $imageId
+     *
+     * @param  int  $imageId
      */
     public function deleteImage($imageId)
     {
         $image = VehicleImage::find($imageId);
-        
+
         if ($image && $image->vehicle_id === $this->vehicle->id) {
             // Delete the physical file from the disk
             Storage::disk('public')->delete($image->image_path);
-            
+
             // Delete the database record
             $image->delete();
 
             // Refresh our component's state
             $this->existing_images = $this->vehicle->images()->get();
-            
+
             // If we deleted the featured image, we reset our tracker
             if ($this->featured_image_id === $imageId) {
                 $this->featured_image_id = null;

@@ -90,7 +90,7 @@
             -->
             <section
                 class="bg-white dark:bg-zinc-800 p-8 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-sm"
-                x-data="signaturePad()">
+                x-data="signaturePad()" @save_signature.window="saveSignature">
                 <flux:heading size="xl" class="mb-6">Terms and Conditions</flux:heading>
 
                 <div
@@ -141,7 +141,7 @@
         </div>
 
         <!-- Right Column: Summary & Payment -->
-        <div class="lg:col-span-1">
+        <div class="lg:col-span-1" x-data>
             <div
                 class="bg-white dark:bg-zinc-800 p-8 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-sm sticky top-8">
                 <flux:heading size="xl" class="mb-6">Booking Summary</flux:heading>
@@ -192,7 +192,7 @@
                   Alpine intercepts the click first (@click) to extract the canvas image data
                   and update the Livewire property ($wire.set) before it submits.
                 -->
-                <flux:button type="submit" variant="primary" class="w-full" @click="saveSignature">
+                <flux:button type="submit" variant="primary" class="w-full" @click="$dispatch('save_signature')">
                     Confirm & Pay
                 </flux:button>
                 <p class="text-xs text-center text-zinc-400 mt-4 flex items-center justify-center gap-1">
@@ -202,79 +202,3 @@
         </div>
     </form>
 </div>
-
-<!--
-  Alpine.js component script for handling the HTML5 Canvas drawing.
-  We put it outside the main div or inside an x-data block.
--->
-<script defer>
-    document.addEventListener('alpine:init', () => {
-        console.log('initiated');
-        Alpine.data('signaturePad', () => ({
-            isDrawing: false,
-            context: null,
-            signatureData: '',
-
-            init() {
-                // Get the 2D context of the canvas to draw paths
-                this.context = this.$refs.canvas.getContext('2d');
-                this.context.lineWidth = 2;
-                this.context.lineCap = 'round';
-                this.context.strokeStyle = '#000'; // Black ink
-            },
-
-            // Get exact coordinates accounting for canvas offset and scrolling
-            getCoordinates(event) {
-                const rect = this.$refs.canvas.getBoundingClientRect();
-                const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-                const clientY = event.touches ? event.touches[0].clientY : event.clientY;
-                return {
-                    x: clientX - rect.left,
-                    y: clientY - rect.top
-                };
-            },
-
-            startDrawing(event) {
-                this.isDrawing = true;
-                const {
-                    x,
-                    y
-                } = this.getCoordinates(event);
-                this.context.beginPath();
-                this.context.moveTo(x, y);
-            },
-
-            draw(event) {
-                if (!this.isDrawing) return;
-                const {
-                    x,
-                    y
-                } = this.getCoordinates(event);
-                this.context.lineTo(x, y);
-                this.context.stroke();
-            },
-
-            stopDrawing() {
-                this.isDrawing = false;
-            },
-
-            clear() {
-                // Wipe the canvas clean
-                this.context.clearRect(0, 0, this.$refs.canvas.width, this.$refs.canvas.height);
-                this.signatureData = '';
-                this.$wire.set('renter_signature', '');
-            },
-
-            saveSignature() {
-                console.log('saveSignature called');
-                // Convert the canvas to a base64 PNG string
-                // We check if it's blank by comparing to an empty canvas (optional advanced check)
-                this.signatureData = this.$refs.canvas.toDataURL('image/png');
-
-                // Explicitly sync the base64 string to the Livewire component property 
-                // before the form submits.
-                this.$wire.set('renter_signature', this.signatureData);
-            }
-        }))
-    })
-</script>

@@ -18,8 +18,8 @@ class VehicleList extends Component
 
     /**
      * Delete a specific vehicle.
-     * 
-     * @param int $id The ID of the vehicle to delete.
+     *
+     * @param  int  $id  The ID of the vehicle to delete.
      */
     public function deleteVehicle($id)
     {
@@ -29,9 +29,8 @@ class VehicleList extends Component
         // Delete the vehicle from the database.
         $vehicle->delete();
 
-        // After deleting, we want to inform the user that it was successful.
-        // We use Flux's toast notification system. We dispatch a browser event.
-        $this->dispatch('toast', message: 'Vehicle deleted successfully.', type: 'success');
+        // After deleting, we use Flux's toast notification system.
+        \Flux::toast(text: 'Vehicle deleted successfully.', variant: 'success');
     }
 
     /**
