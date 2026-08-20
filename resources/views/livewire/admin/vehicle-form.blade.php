@@ -63,12 +63,15 @@
               multiple: allows selecting multiple files at once.
               accept="image/*": restricts file picker to images only.
             -->
-            <flux:input type="file" wire:model="new_images" label="Upload New Images" multiple accept="image/*" />
+            <flux:input type="file" wire:model="new_images" label="Upload New Image" accept="image/*" />
 
-            <!-- Displaying newly selected images (preview before saving) -->
+            <!-- Displaying newly selected image (preview before saving) -->
             @if ($new_images)
+                @php
+                    $previewPhotos = is_array($new_images) ? $new_images : [$new_images];
+                @endphp
                 <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                    @foreach ($new_images as $photo)
+                    @foreach ($previewPhotos as $photo)
                         <div
                             class="relative rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 aspect-video">
                             <!-- temporaryUrl() provides a preview of the uploaded file before it is permanently stored -->

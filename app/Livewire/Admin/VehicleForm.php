@@ -142,21 +142,25 @@ class VehicleForm extends Component
             ]);
         }
 
-        // 3. Process newly uploaded images
-        $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
-        foreach ($this->new_images as $photo) {
-            // Store the file in the configured storage disk
-            $path = $photo->store('vehicles', $disk);
+        // 3. Process newly uploaded image(s)
+        if ($this->new_images) {
+            $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
+            $photos = is_array($this->new_images) ? $this->new_images : [$this->new_images];
 
-            // Create a database record linking the image to the vehicle
-            $image = $this->vehicle->images()->create([
-                'image_path' => $path,
-                'is_featured' => false,
-            ]);
+            foreach ($photos as $photo) {
+                // Store the file in the configured storage disk
+                $path = $photo->store('vehicles', $disk);
 
-            // If no featured image is set yet, make the first uploaded one featured by default
-            if (! $this->featured_image_id) {
-                $this->setFeaturedImage($image->id);
+                // Create a database record linking the image to the vehicle
+                $image = $this->vehicle->images()->create([
+                    'image_path' => $path,
+                    'is_featured' => false,
+                ]);
+
+                // If no featured image is set yet, make the first uploaded one featured by default
+                if (! $this->featured_image_id) {
+                    $this->setFeaturedImage($image->id);
+                }
             }
         }
 
