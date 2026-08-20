@@ -63,7 +63,7 @@
               multiple: allows selecting multiple files at once.
               accept="image/*": restricts file picker to images only.
             -->
-            <flux:input type="file" wire:model="new_images" label="Upload New Image" accept="image/*" />
+            <flux:input type="file" wire:model="new_images" label="Upload New Images" multiple accept="image/*" />
 
             <!-- Displaying newly selected image (preview before saving) -->
             @if ($new_images)
