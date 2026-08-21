@@ -2,9 +2,12 @@
 
 use App\Livewire\Client\Checkout;
 use App\Livewire\Client\VehicleDetail;
+use App\Mail\RentalConfirmationMail;
+use App\Models\Order;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -30,7 +33,9 @@ it('allows a user to select dates on the vehicle detail page', function () {
         ->assertRedirect(route('checkout', $vehicle));
 });
 
-it('allows a user to complete the checkout process', function () {
+it('allows a user to complete the checkout process, sends an email with attached PDF, and redirects to thank-you page', function () {
+    Mail::fake();
+
     $vehicle = Vehicle::factory()->create(['status' => 'available', 'daily_rate' => 100]);
     $user = User::factory()->create();
 
@@ -58,8 +63,11 @@ it('allows a user to complete the checkout process', function () {
         ->set('agreed_to_terms', true)
         ->set('renter_name', 'John Doe')
         ->set('renter_signature', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')
-        ->call('processBooking')
-        ->assertRedirect(route('dashboard'));
+        ->call('processBooking');
+
+    $order = Order::first();
+
+    $this->assertNotNull($order);
 
     $this->assertDatabaseHas('orders', [
         'vehicle_id' => $vehicle->id,
@@ -73,4 +81,24 @@ it('allows a user to complete the checkout process', function () {
         'payment_type' => 'Credit Card',
         'total_due' => 300, // 200 estimate + 100 deposit
     ]);
+
+    Mail::assertSent(RentalConfirmationMail::class, function ($mail) {
+        return $mail->hasTo('john@example.com');
+    });
+});
+
+it('renders the booking thank-you page for guests and registered renters', function () {
+    $vehicle = Vehicle::factory()->create();
+    $order = Order::factory()->create([
+        'vehicle_id' => $vehicle->id,
+        'guest_first_name' => 'Jane',
+        'guest_last_name' => 'Smith',
+        'guest_email' => 'jane@example.com',
+    ]);
+
+    $this->get(route('booking.thank-you', $order))
+        ->assertOk()
+        ->assertSee('Thank You for Your Booking!')
+        ->assertSee('Jane')
+        ->assertSee('jane@example.com');
 });

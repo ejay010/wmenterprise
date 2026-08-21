@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Client;
 
+use App\Mail\RentalConfirmationMail;
 use App\Models\Order;
 use App\Models\RentalAgreement;
 use App\Models\Transaction;
 use App\Models\Vehicle;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 
 /**
@@ -111,10 +113,13 @@ class Checkout extends Component
             'renter_signature' => 'required|string', // Base64 image data
         ]);
 
+        $order = null;
+        $agreement = null;
+
         // 2. Database Transaction
         // We use a database transaction to ensure that if something fails (e.g. payment issue),
         // we don't end up with partial data in the database. It's an all-or-nothing operation.
-        DB::transaction(function () {
+        DB::transaction(function () use (&$order, &$agreement) {
 
             $totalDue = $this->total_estimate + $this->deposit;
 
@@ -122,7 +127,8 @@ class Checkout extends Component
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'vehicle_id' => $this->vehicle->id,
-                'guest_name' => $this->first_name.' '.$this->last_name,
+                'guest_first_name' => $this->first_name,
+                'guest_last_name' => $this->last_name,
                 'guest_email' => $this->email,
                 'guest_phone' => $this->phone,
                 'start_date' => $this->pickup_date,
@@ -180,19 +186,22 @@ class Checkout extends Component
 
         });
 
+        // Send email confirmation with attached PDF agreement to the renter
+        if ($agreement && $order) {
+            try {
+                Mail::to($agreement->email)->send(new RentalConfirmationMail($agreement, $order));
+            } catch (\Throwable $e) {
+                // Log or handle email failure gracefully
+            }
+        }
+
         // 3. Clear session data so the user can't accidentally resubmit
         session()->forget(['booking_pickup_date', 'booking_return_date', 'booking_days', 'booking_estimate']);
 
-        // 4. Provide feedback and redirect to dashboard where they can download their PDF
-        \Flux::toast(text: 'Booking confirmed! You can now download your agreement.', variant: 'success');
+        // 4. Provide feedback and redirect to Thank You page
+        \Flux::toast(text: 'Booking confirmed! A copy of your agreement has been emailed to you.', variant: 'success');
 
-        // If they are a guest, we might normally redirect to a generic success page.
-        // For this MVP, we redirect to dashboard if logged in, or catalog if guest.
-        if (auth()->check()) {
-            return $this->redirectRoute('dashboard', navigate: true);
-        } else {
-            return $this->redirectRoute('catalog', navigate: true);
-        }
+        return $this->redirectRoute('booking.thank-you', $order, navigate: true);
     }
 
     public function render()

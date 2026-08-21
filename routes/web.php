@@ -4,6 +4,7 @@ use App\Livewire\Admin\AgreementList;
 use App\Livewire\Admin\VehicleForm;
 use App\Livewire\Admin\VehicleList;
 use App\Livewire\Client\Checkout;
+use App\Livewire\Client\ThankYou;
 use App\Livewire\Client\VehicleCatalog;
 use App\Livewire\Client\VehicleDetail;
 use App\Models\RentalAgreement;
@@ -30,6 +31,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::get('/catalog', VehicleCatalog::class)->name('catalog');
 Route::get('/vehicle/{vehicle}', VehicleDetail::class)->name('vehicle.show');
 Route::get('/checkout/{vehicle}', Checkout::class)->name('checkout');
+Route::get('/booking/thank-you/{order}', ThankYou::class)->name('booking.thank-you');
 
 // PDF Download Route
 Route::get('/agreements/{agreement}/pdf', function (RentalAgreement $agreement) {
