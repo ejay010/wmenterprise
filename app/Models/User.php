@@ -43,8 +43,23 @@ class User extends Authenticatable implements PasskeyUser
         'phone',
         'date_of_birth',
         'drivers_license',
+        'drivers_license_image',
         'address',
     ];
+
+    /**
+     * Get the resolved URL for the user's driver's license image.
+     */
+    public function getDriversLicenseImageUrlAttribute(): ?string
+    {
+        if (! $this->drivers_license_image) {
+            return null;
+        }
+
+        $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
+
+        return Storage::disk($disk)->url($this->drivers_license_image);
+    }
 
     /**
      * Get the attributes that should be cast.

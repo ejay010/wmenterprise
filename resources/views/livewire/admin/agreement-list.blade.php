@@ -47,14 +47,22 @@
                         </flux:badge>
                     </flux:table.cell>
                     <flux:table.cell>
-                        <!-- 
-                          Link to download the generated PDF.
-                          We use a standard non-Livewire GET request (data-navigate-ignore) because file downloads
-                          need to be handled by the browser directly, not via AJAX.
-                        -->
-                        <flux:button href="{{ route('agreements.pdf', $agreement) }}" variant="ghost" size="sm" icon="arrow-down-tray" data-navigate-ignore>
-                            PDF
-                        </flux:button>
+                        <div class="flex items-center gap-2">
+                            <!-- 
+                              Link to download the generated PDF.
+                              We use a standard non-Livewire GET request (data-navigate-ignore) because file downloads
+                              need to be handled by the browser directly, not via AJAX.
+                            -->
+                            <flux:button href="{{ route('agreements.pdf', $agreement) }}" variant="ghost" size="sm" icon="arrow-down-tray" data-navigate-ignore>
+                                PDF
+                            </flux:button>
+
+                            @if($agreement->drivers_license_image_url)
+                                <flux:button href="{{ $agreement->drivers_license_image_url }}" target="_blank" variant="subtle" size="sm" icon="identification">
+                                    License
+                                </flux:button>
+                            @endif
+                        </div>
                     </flux:table.cell>
                 </flux:table.row>
             @empty

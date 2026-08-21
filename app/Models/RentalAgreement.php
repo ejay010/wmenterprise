@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\RentalAgreementFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class RentalAgreement extends Model
 {
@@ -19,6 +20,7 @@ class RentalAgreement extends Model
         'last_name',
         'date_of_birth',
         'drivers_license',
+        'drivers_license_image',
         'address',
         'email',
         'phone',
@@ -40,6 +42,20 @@ class RentalAgreement extends Model
         'signed_at',
         'status',
     ];
+
+    /**
+     * Get the resolved URL for the rental agreement's driver's license image.
+     */
+    public function getDriversLicenseImageUrlAttribute(): ?string
+    {
+        if (! $this->drivers_license_image) {
+            return null;
+        }
+
+        $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
+
+        return Storage::disk($disk)->url($this->drivers_license_image);
+    }
 
     protected function casts(): array
     {

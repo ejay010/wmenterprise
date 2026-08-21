@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
-
+use Livewire\WithFileUploads;
 
 /**
  * The Checkout component handles capturing the renter's details, signature,
@@ -19,6 +19,8 @@ use Livewire\Component;
  */
 class Checkout extends Component
 {
+    use WithFileUploads;
+
     public Vehicle $vehicle;
 
     // Fields mapping to the Rental Agreement PDF
@@ -29,6 +31,8 @@ class Checkout extends Component
     public $date_of_birth;
 
     public $drivers_license;
+
+    public $drivers_license_image; // License photo upload
 
     public $address;
 
@@ -102,6 +106,7 @@ class Checkout extends Component
             'last_name' => 'required|string|max:255',
             'date_of_birth' => 'required|date|before:today',
             'drivers_license' => 'required|string|max:255',
+            'drivers_license_image' => 'nullable|image|max:10240',
             'address' => 'required|string|max:1000',
             'email' => 'required|email|max:255',
             'phone' => 'required|string|max:255',
@@ -115,13 +120,21 @@ class Checkout extends Component
             'renter_signature' => 'required|string', // Base64 image data
         ]);
 
+        $licenseImagePath = null;
+        if ($this->drivers_license_image) {
+            $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
+            $licenseImagePath = $this->drivers_license_image->store('licenses', $disk);
+        } elseif (auth()->check() && auth()->user()->drivers_license_image) {
+            $licenseImagePath = auth()->user()->drivers_license_image;
+        }
+
         $order = null;
         $agreement = null;
 
         // 2. Database Transaction
         // We use a database transaction to ensure that if something fails (e.g. payment issue),
         // we don't end up with partial data in the database. It's an all-or-nothing operation.
-        DB::transaction(function () use (&$order, &$agreement) {
+        DB::transaction(function () use (&$order, &$agreement, $licenseImagePath) {
 
             $totalDue = $this->total_estimate + $this->deposit;
 
@@ -149,6 +162,7 @@ class Checkout extends Component
                 'last_name' => $this->last_name,
                 'date_of_birth' => $this->date_of_birth,
                 'drivers_license' => $this->drivers_license,
+                'drivers_license_image' => $licenseImagePath,
                 'address' => $this->address,
                 'email' => $this->email,
                 'phone' => $this->phone,
@@ -188,13 +202,18 @@ class Checkout extends Component
 
         });
 
+        // Save license photo to registered user account for future rentals
+        if (auth()->check() && $licenseImagePath) {
+            auth()->user()->update(['drivers_license_image' => $licenseImagePath]);
+        }
+
         // Send email confirmation with attached PDF agreement to the renter
         if ($agreement && $order) {
             try {
                 Mail::to($agreement->email)->send(new RentalConfirmationMail($agreement, $order));
             } catch (\Throwable $e) {
                 // Log or handle email failure gracefully
-                Log::error('Failed to send rental confirmation email: ' . $e->getMessage());
+                Log::error('Failed to send rental confirmation email: '.$e->getMessage());
             }
         }
 

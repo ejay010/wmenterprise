@@ -33,6 +33,21 @@
 
                     <flux:input wire:model="email" type="email" label="Email" required />
                     <flux:input wire:model="phone" type="tel" label="Phone" required />
+
+                    <div class="md:col-span-2 space-y-2">
+                        <flux:input type="file" wire:model="drivers_license_image" label="Driver's License Photo / Scan (Optional)" accept="image/*" />
+                        @if ($drivers_license_image)
+                            <div class="mt-2 text-xs text-zinc-500">Selected License Preview:</div>
+                            <div class="w-48 h-28 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-zinc-100">
+                                <img src="{{ $drivers_license_image->temporaryUrl() }}" class="w-full h-full object-cover">
+                            </div>
+                        @elseif(auth()->check() && auth()->user()->drivers_license_image_url)
+                            <div class="mt-2 text-xs text-zinc-500">Saved License on File:</div>
+                            <div class="w-48 h-28 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-zinc-100">
+                                <img src="{{ auth()->user()->drivers_license_image_url }}" class="w-full h-full object-cover">
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </section>
 

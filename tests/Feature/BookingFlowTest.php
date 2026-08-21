@@ -4,9 +4,11 @@ use App\Livewire\Client\Checkout;
 use App\Livewire\Client\VehicleDetail;
 use App\Mail\RentalConfirmationMail;
 use App\Models\Order;
+use App\Models\RentalAgreement;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Testing\File;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 
@@ -101,4 +103,44 @@ it('renders the booking thank-you page for guests and registered renters', funct
         ->assertSee('Thank You for Your Booking!')
         ->assertSee('Jane')
         ->assertSee('jane@example.com');
+});
+
+it('allows a user to upload a driver license image during checkout', function () {
+    Storage::fake(config('filesystems.default') === 's3' ? 's3' : 'public');
+    Mail::fake();
+
+    $vehicle = Vehicle::factory()->create(['status' => 'available', 'daily_rate' => 100]);
+    $user = User::factory()->create();
+    $file = File::fake()->image('license.jpg');
+
+    session([
+        'booking_pickup_date' => now()->addDay()->format('Y-m-d'),
+        'booking_return_date' => now()->addDays(3)->format('Y-m-d'),
+        'booking_estimate' => 200,
+        'booking_days' => 2,
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(Checkout::class, ['vehicle' => $vehicle])
+        ->set('first_name', 'John')
+        ->set('last_name', 'Doe')
+        ->set('email', 'john@example.com')
+        ->set('phone', '1234567890')
+        ->set('address', '123 Main St')
+        ->set('date_of_birth', '1990-01-01')
+        ->set('drivers_license', 'DL123456')
+        ->set('drivers_license_image', $file)
+        ->set('pickup_location', 'Rock Sound International Airport')
+        ->set('pickup_time', '12:00')
+        ->set('return_location', 'Rock Sound International Airport')
+        ->set('return_time', '12:00')
+        ->set('payment_type', 'Credit Card')
+        ->set('agreed_to_terms', true)
+        ->set('renter_name', 'John Doe')
+        ->set('renter_signature', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')
+        ->call('processBooking');
+
+    $agreement = RentalAgreement::first();
+    $this->assertNotNull($agreement->drivers_license_image);
+    $this->assertNotNull($user->fresh()->drivers_license_image);
 });
