@@ -8,8 +8,10 @@ use App\Models\RentalAgreement;
 use App\Models\Transaction;
 use App\Models\Vehicle;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
+
 
 /**
  * The Checkout component handles capturing the renter's details, signature,
@@ -192,6 +194,7 @@ class Checkout extends Component
                 Mail::to($agreement->email)->send(new RentalConfirmationMail($agreement, $order));
             } catch (\Throwable $e) {
                 // Log or handle email failure gracefully
+                Log::error('Failed to send rental confirmation email: ' . $e->getMessage());
             }
         }
 
