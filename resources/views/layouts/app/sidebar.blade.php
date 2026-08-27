@@ -20,6 +20,12 @@
                         :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
+                    
+                    <flux:sidebar.item icon="truck" :href="route('catalog')"
+                        :current="request()->routeIs('catalog') || request()->routeIs('vehicle.*')" wire:navigate>
+                        {{ __('Vehicle Catalog') }}
+                    </flux:sidebar.item>
+
                     @if (auth()->check() && auth()->user()->role === 'admin')
                         <flux:sidebar.item icon="truck" :href="route('admin.vehicles.index')"
                             :current="request()->routeIs('admin.vehicles.*')" wire:navigate>
@@ -28,6 +34,10 @@
                         <flux:sidebar.item icon="document-text" :href="route('admin.agreements.index')"
                             :current="request()->routeIs('admin.agreements.*')" wire:navigate>
                             {{ __('Agreements') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="cog" :href="route('admin.settings.bank')"
+                            :current="request()->routeIs('admin.settings.*')" wire:navigate>
+                            {{ __('Bank Settings') }}
                         </flux:sidebar.item>
                     @endif
                 </flux:sidebar.group>

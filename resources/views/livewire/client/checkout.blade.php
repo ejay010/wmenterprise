@@ -195,12 +195,23 @@
                 </div>
 
                 <div class="mb-8">
-                    <flux:radio.group wire:model="payment_type" label="Payment Method" variant="segmented">
+                    <flux:radio.group wire:model.live="payment_type" label="Payment Method" variant="segmented">
                         <flux:radio value="Credit Card" label="Credit Card" />
                         <flux:radio value="Cash" label="Cash" />
                         <flux:radio value="Direct Deposit" label="Direct Deposit" />
                     </flux:radio.group>
                 </div>
+
+                @if($payment_type === 'Direct Deposit')
+                    <div class="mb-8 p-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg space-y-4">
+                        <div class="text-sm text-zinc-600 dark:text-zinc-400">
+                            <strong class="text-zinc-900 dark:text-white">Banking Details:</strong>
+                            <div class="whitespace-pre-wrap mt-2 p-3 bg-white dark:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700">{{ \App\Models\Setting::where('key', 'bank_details')->value('value') ?? 'Bank details not provided yet.' }}</div>
+                        </div>
+                        <flux:input type="file" wire:model="bank_receipt_image" label="Upload Receipt Screenshot" accept="image/*" required />
+                        <flux:input wire:model="bank_transaction_number" label="Bank Transaction Number" required />
+                    </div>
+                @endif
 
                 <!--
                   When clicked, this button triggers wire:submit on the form.

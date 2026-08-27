@@ -56,6 +56,10 @@ class Checkout extends Component
 
     public $renter_signature; // Base64 data from Alpine canvas
 
+    public $bank_receipt_image; // Direct deposit screenshot
+
+    public $bank_transaction_number; // Direct deposit reference
+
     // Data passed from the VehicleDetail component via Session
     public $pickup_date;
 
@@ -115,6 +119,8 @@ class Checkout extends Component
             'return_location' => 'required|string',
             'return_time' => 'required|string',
             'payment_type' => 'required|in:Cash,Credit Card,Direct Deposit',
+            'bank_receipt_image' => 'required_if:payment_type,Direct Deposit|nullable|image|max:10240',
+            'bank_transaction_number' => 'required_if:payment_type,Direct Deposit|nullable|string|max:255',
             'agreed_to_terms' => 'accepted', // Must be true/1/on
             'renter_name' => 'required|string|max:255',
             'renter_signature' => 'required|string', // Base64 image data
@@ -190,14 +196,23 @@ class Checkout extends Component
                 'status' => 'completed',
             ]);
 
+            // Process Direct Deposit Receipt Image
+            $receiptImagePath = null;
+            if ($this->payment_type === 'Direct Deposit' && $this->bank_receipt_image) {
+                $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
+                $receiptImagePath = $this->bank_receipt_image->store('receipts', $disk);
+            }
+
             // Step C: Simulate Payment Gateway processing (Mock)
             // In a real app, you would call the PowerTranz API here and wait for a success response
             Transaction::create([
                 'order_id' => $order->id,
                 'amount' => $totalDue,
                 'payment_method' => $this->payment_type,
-                'gateway_reference' => 'MOCK-PTZ-'.uniqid(),
-                'status' => 'successful',
+                'gateway_reference' => $this->payment_type === 'Direct Deposit' ? $this->bank_transaction_number : 'MOCK-PTZ-'.uniqid(),
+                'status' => $this->payment_type === 'Direct Deposit' ? 'pending_verification' : 'successful',
+                'bank_receipt_image' => $receiptImagePath,
+                'bank_transaction_number' => $this->bank_transaction_number,
             ]);
 
         });

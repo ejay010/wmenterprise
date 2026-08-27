@@ -17,6 +17,8 @@ class Transaction extends Model
         'payment_method',
         'gateway_reference',
         'status',
+        'bank_receipt_image',
+        'bank_transaction_number',
     ];
 
     public function order()
