@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Vehicle;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -32,7 +33,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Sample Vehicles
-        \App\Models\Vehicle::create([
+        Vehicle::create([
             'make' => 'Toyota',
             'model' => 'Camry',
             'year' => '2023',
@@ -45,7 +46,7 @@ class DatabaseSeeder extends Seeder
             'gearbox' => 'Automatic',
         ]);
 
-        \App\Models\Vehicle::create([
+        Vehicle::create([
             'make' => 'Honda',
             'model' => 'CR-V',
             'year' => '2024',
@@ -57,8 +58,8 @@ class DatabaseSeeder extends Seeder
             'class' => 'SUV',
             'gearbox' => 'Automatic',
         ]);
-        
-        \App\Models\Vehicle::create([
+
+        Vehicle::create([
             'make' => 'Ford',
             'model' => 'Mustang',
             'year' => '2022',

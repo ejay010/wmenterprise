@@ -35,6 +35,10 @@
                             :current="request()->routeIs('admin.agreements.*')" wire:navigate>
                             {{ __('Agreements') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="calendar" :href="route('admin.blackout-dates.index')"
+                            :current="request()->routeIs('admin.blackout-dates.*')" wire:navigate>
+                            {{ __('Blackout Dates') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="cog" :href="route('admin.settings.bank')"
                             :current="request()->routeIs('admin.settings.*')" wire:navigate>
                             {{ __('Bank Settings') }}

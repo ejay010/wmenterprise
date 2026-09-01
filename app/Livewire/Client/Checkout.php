@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Client;
 
+use App\Mail\AdminNewBookingMail;
 use App\Mail\RentalConfirmationMail;
 use App\Models\Order;
 use App\Models\RentalAgreement;
 use App\Models\Transaction;
+use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -134,10 +136,18 @@ class Checkout extends Component
             $licenseImagePath = auth()->user()->drivers_license_image;
         }
 
+        // 2. Availability Double-Check to prevent double-bookings / race conditions
+        if (! $this->vehicle->isAvailableForDates($this->pickup_date, $this->return_date)) {
+            $this->addError('payment_type', 'Sorry, this vehicle is no longer available for the selected dates. Please choose different dates.');
+            \Flux::toast(text: 'Vehicle is no longer available for the selected dates.', variant: 'danger');
+
+            return;
+        }
+
         $order = null;
         $agreement = null;
 
-        // 2. Database Transaction
+        // 3. Database Transaction
         // We use a database transaction to ensure that if something fails (e.g. payment issue),
         // we don't end up with partial data in the database. It's an all-or-nothing operation.
         DB::transaction(function () use (&$order, &$agreement, $licenseImagePath) {
@@ -227,8 +237,20 @@ class Checkout extends Component
             try {
                 Mail::to($agreement->email)->send(new RentalConfirmationMail($agreement, $order));
             } catch (\Throwable $e) {
-                // Log or handle email failure gracefully
                 Log::error('Failed to send rental confirmation email: '.$e->getMessage());
+            }
+
+            // Send new booking notification email to Administrator(s)
+            try {
+                $adminEmails = User::where('role', 'admin')->pluck('email')->filter()->all();
+                if (empty($adminEmails) && config('mail.from.address')) {
+                    $adminEmails = [config('mail.from.address')];
+                }
+                foreach ($adminEmails as $adminEmail) {
+                    Mail::to($adminEmail)->send(new AdminNewBookingMail($order, $agreement));
+                }
+            } catch (\Throwable $e) {
+                Log::error('Failed to send admin booking notification email: '.$e->getMessage());
             }
         }
 

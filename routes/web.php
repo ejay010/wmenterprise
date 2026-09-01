@@ -1,6 +1,8 @@
 <?php
 
 use App\Livewire\Admin\AgreementList;
+use App\Livewire\Admin\BankSettings;
+use App\Livewire\Admin\BlackoutDates;
 use App\Livewire\Admin\VehicleForm;
 use App\Livewire\Admin\VehicleList;
 use App\Livewire\Client\Checkout;
@@ -25,7 +27,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/vehicles/create', VehicleForm::class)->name('vehicles.create');
     Route::get('/vehicles/{vehicle}/edit', VehicleForm::class)->name('vehicles.edit');
     Route::get('/agreements', AgreementList::class)->name('agreements.index');
-    Route::get('/settings/bank', \App\Livewire\Admin\BankSettings::class)->name('settings.bank');
+    Route::get('/blackout-dates', BlackoutDates::class)->name('blackout-dates.index');
+    Route::get('/settings/bank', BankSettings::class)->name('settings.bank');
 });
 
 // Client Booking Flow Routes

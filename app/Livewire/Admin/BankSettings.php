@@ -3,8 +3,8 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Setting;
-use Livewire\Component;
 use Flux;
+use Livewire\Component;
 
 class BankSettings extends Component
 {

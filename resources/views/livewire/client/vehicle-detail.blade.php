@@ -110,15 +110,66 @@
             <div class="bg-white dark:bg-zinc-800 rounded-2xl p-6 border border-zinc-200 dark:border-zinc-700 sticky top-8 shadow-sm">
                 <flux:heading size="xl" class="mb-6">Book this vehicle</flux:heading>
                 
-                <form wire:submit="continueToBooking" class="space-y-6">
+                <form wire:submit="continueToBooking" class="space-y-6"
+                    x-data="{
+                        unavailableRanges: @js($unavailableRanges),
+                        init() {
+                            const disabledConfig = this.unavailableRanges.map(r => ({
+                                from: r.from,
+                                to: r.to
+                            }));
+
+                            // Initialize Flatpickr on pickup input
+                            if (window.flatpickr) {
+                                flatpickr(this.$refs.pickupInput, {
+                                    dateFormat: 'Y-m-d',
+                                    minDate: 'today',
+                                    disable: disabledConfig,
+                                    onChange: (selectedDates, dateStr) => {
+                                        $wire.set('pickup_date', dateStr);
+                                    }
+                                });
+
+                                flatpickr(this.$refs.returnInput, {
+                                    dateFormat: 'Y-m-d',
+                                    minDate: 'today',
+                                    disable: disabledConfig,
+                                    onChange: (selectedDates, dateStr) => {
+                                        $wire.set('return_date', dateStr);
+                                    }
+                                });
+                            }
+                        }
+                    }">
                     
                     <div class="space-y-4">
-                        <!-- Date Pickers bound to Livewire properties -->
-                        <!-- When these change, the `updated` hook in the component fires and recalculates the total -->
-                        <flux:input type="date" wire:model.live="pickup_date" label="Pick-up Date" required min="{{ date('Y-m-d') }}" />
+                        <div>
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Pick-up Date</label>
+                            <input type="text" x-ref="pickupInput" wire:model.live="pickup_date"
+                                class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                placeholder="Select pick-up date" required />
+                            @error('pickup_date')
+                                <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                            @enderror
+                        </div>
                         
-                        <flux:input type="date" wire:model.live="return_date" label="Return Date" required min="{{ $pickup_date ?? date('Y-m-d') }}" />
+                        <div>
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Return Date</label>
+                            <input type="text" x-ref="returnInput" wire:model.live="return_date"
+                                class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                placeholder="Select return date" required />
+                            @error('return_date')
+                                <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                            @enderror
+                        </div>
                     </div>
+
+                    @if(! $is_available && $availability_message)
+                        <div class="p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-xs flex items-start gap-2">
+                            <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <span>{{ $availability_message }}</span>
+                        </div>
+                    @endif
 
                     <!-- Dynamic Quote Summary -->
                     <div class="bg-zinc-50 dark:bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-100 dark:border-zinc-700">
@@ -133,12 +184,12 @@
                         </div>
                     </div>
 
-                    @if($days <= 0)
-                        <div class="text-sm text-red-500 font-medium">Please select a valid date range (at least 1 day).</div>
+                    @if($days <= 0 && $is_available)
+                        <div class="text-xs text-red-500 font-medium">Please select a valid date range (at least 1 day).</div>
                     @endif
 
                     <!-- Submit Button -->
-                    <flux:button type="submit" variant="primary" class="w-full" :disabled="$days <= 0">
+                    <flux:button type="submit" variant="primary" class="w-full" :disabled="$days <= 0 || ! $is_available">
                         Continue to Booking
                     </flux:button>
                 </form>
