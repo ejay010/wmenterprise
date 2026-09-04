@@ -43,3 +43,7 @@ Route::get('/agreements/{agreement}/pdf', function (RentalAgreement $agreement) 
 
     return $pdf->stream('agreement-'.$agreement->id.'.pdf');
 })->name('agreements.pdf');
+
+
+// New layout
+Route::view('/layout-test', 'newLayout');
