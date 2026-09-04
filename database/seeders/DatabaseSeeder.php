@@ -17,17 +17,17 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Admin user
-        User::factory()->create([
+        User::create([
             'name' => 'Admin User',
-            'email' => 'admin@example.com',
+            'email' => env('ADMIN_EMAIL', 'admin@example.com'),
             'password' => bcrypt('password'),
             'role' => 'admin',
         ]);
 
         // Regular customer
-        User::factory()->create([
+        User::create([
             'name' => 'Test Customer',
-            'email' => 'customer@example.com',
+            'email' => env('TEST_CUSTOMER_EMAIL', 'test@example.com'),
             'password' => bcrypt('password'),
             'role' => 'registered',
         ]);
