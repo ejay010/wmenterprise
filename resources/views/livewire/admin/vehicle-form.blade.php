@@ -22,13 +22,13 @@
             <flux:input wire:model="year" type="number" label="Year" placeholder="2024" required />
             <flux:input wire:model="color" label="Color" placeholder="e.g. Red" required />
             <flux:select wire:model="class" label="Class" required>
-                <flux:select.option value="suv">SUV</flux:select.option>
-                <flux:select.option value="sedan">Sedan</flux:select.option>
-                <flux:select.option value="compact">Compact</flux:select.option>
-                <flux:select.option value="sub_compact">Sub Compact</flux:select.option>
-                <flux:select.option value="truck">Truck</flux:select.option>
-                <flux:select.option value="mid_size">Mid-Size</flux:select.option>
-                <flux:select.option value="full_size">Full-Size</flux:select.option>
+                <flux:select.option value="SUV">SUV</flux:select.option>
+                <flux:select.option value="Sedan">Sedan</flux:select.option>
+                <flux:select.option value="Compact">Compact</flux:select.option>
+                <flux:select.option value="Sub-Compact">Sub-Compact</flux:select.option>
+                <flux:select.option value="Truck">Truck</flux:select.option>
+                <flux:select.option value="Mid-Size">Mid-Size</flux:select.option>
+                <flux:select.option value="Full-Size">Full-Size</flux:select.option>
             </flux:select>
             <flux:input wire:model="max_passengers" type="number" label="Max Passengers" placeholder="4" required />
             <flux:input wire:model="fuel_type" label="Fuel Type" placeholder="e.g. Gasoline" required />
@@ -89,8 +89,7 @@
                         @foreach ($existing_images as $image)
                             <div
                                 class="relative rounded-lg overflow-hidden border {{ $featured_image_id === $image->id ? 'border-primary-500 ring-2 ring-primary-500' : 'border-zinc-200 dark:border-zinc-700' }} aspect-video group">
-                                <img src="{{ $image->url }}"
-                                    class="w-full h-full object-cover">
+                                <img src="{{ $image->url }}" class="w-full h-full object-cover">
 
                                 <!-- Overlay container for actions on hover -->
                                 <div
