@@ -94,6 +94,34 @@
             <flux:sidebar.item :href="route('contact')" :current="request()->routeIs('contact')" wire:navigate>
                 {{ __('Contact') }}
             </flux:sidebar.item>
+
+            @auth
+                <flux:sidebar.item icon="layout-grid" :href="route('dashboard')"
+                    :current="request()->routeIs('dashboard')" wire:navigate>
+                    {{ __('Dashboard') }}
+                </flux:sidebar.item>
+                <flux:tooltip :content="__('Settings')" position="bottom">
+                    <flux:sidebar.item icon="cog" :href="route('profile.edit')"
+                        :current="request()->routeIs('profile.edit')" wire:navigate>
+                        {{ __('Settings') }}
+                    </flux:sidebar.item>
+                </flux:tooltip>
+                <form method="POST" action="{{ route('logout') }}" class="w-full">
+                    @csrf
+                    <flux:tooltip :content="__('Log out')" position="bottom">
+                        <flux:sidebar.item as="button" type="submit" icon="arrow-right-start-on-rectangle"
+                            class="w-full cursor-pointer" data-test="logout-button">
+                            {{ __('Log out') }}
+                        </flux:sidebar.item>
+                    </flux:tooltip>
+                </form>
+            @else
+                <flux:tooltip :content="__('Log in')" position="bottom">
+                    <flux:sidebar.item icon="arrow-right-end-on-rectangle" :href="route('login')" wire:navigate>
+                        {{ __('Log in') }}
+                    </flux:sidebar.item>
+                </flux:tooltip>
+            @endauth
         </flux:sidebar.nav>
 
 
