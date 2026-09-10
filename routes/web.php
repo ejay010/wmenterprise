@@ -10,10 +10,14 @@ use App\Livewire\Client\ThankYou;
 use App\Livewire\Client\VehicleCatalog;
 use App\Livewire\Client\VehicleDetail;
 use App\Models\RentalAgreement;
+use App\Models\Vehicle;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
+Route::get('/', function () {
+    $vehicles = Vehicle::take(4)->get();
+    return view('newLayout', compact('vehicles'));
+})->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');

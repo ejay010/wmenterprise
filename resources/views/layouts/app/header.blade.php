@@ -6,10 +6,27 @@
 </head>
 
 <body class="min-h-screen bg-white dark:bg-zinc-800">
-    <flux:header container class="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 ">
+    <flux:header sticky container
+        class="top-0 z-50 border-b border-zinc-100 bg-white/95 shadow-xs backdrop-blur-md mx-auto px-4 sm:px-6 lg:px-8 h-20">
+        <flux:brand href="{{ route('home') }}" logo="{{ Vite::asset('resources/images/logo.png') }}"
+            name="W Major Enterprises" wire:navigate class="text-accent" />
 
-        <flux:brand href="#" logo="{{ Vite::asset('resources/images/logo.png') }}" name="W Major Enterprises"
-            wire:navigate class="text-accent mt-2" />
+        <flux:spacer />
+
+        <flux:navbar class="items-center space-x-3">
+            <flux:navbar.item :href="route('home')" :current="request()->routeIs('home')" wire:navigate>
+                {{ __('Home') }}
+            </flux:navbar.item>
+            <flux:navbar.item :href="route('catalog')" :current="request()->routeIs('catalog')" wire:navigate>
+                {{ __('Vehicles') }}
+            </flux:navbar.item>
+            <flux:navbar.item wire:navigate>
+                {{ __('About Us') }}
+            </flux:navbar.item>
+            <flux:navbar.item wire:navigate>
+                {{ __('Contact') }}
+            </flux:navbar.item>
+        </flux:navbar>
 
         <flux:spacer />
 
