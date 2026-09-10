@@ -34,7 +34,7 @@
     .dark {
         --color-accent: var(--color-coral);
         --color-accent-content: var(--color-coral);
-        --color-accent-foreground: var(--color-neutral-800);
+        --color-accent-foreground: var(--color-coral);
     }
 }
 

@@ -5,11 +5,13 @@
     @include('partials.head')
 </head>
 
-<body class="min-h-screen bg-white dark:bg-zinc-800">
+<body class="min-h-screen bg-white dark:bg-zinc-800 dark:text-white">
     <flux:header container
         class="top-0 z-50 border-b border-zinc-100 bg-white/95 shadow-xs backdrop-blur-md mx-auto px-4 sm:px-6 lg:px-8 h-20">
-        <flux:brand href="{{ route('home') }}" logo="{{ Vite::asset('resources/images/logo.png') }}"
-            name="W Major Enterprises" wire:navigate class="text-accent" />
+        <flux:brand href="{{ route('home') }}" logo="{{ Vite::asset('resources/images/logo.png') }}" wire:navigate />
+        <flux:heading class="text-accent! dark:text-accent!" wire:navigate>
+            WM Car Rental
+        </flux:heading>
 
         <flux:spacer />
 
@@ -72,6 +74,9 @@
         class="lg:hidden border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 z-50! w-full">
         <flux:sidebar.header>
             <x-app-logo :sidebar="true" />
+            <flux:heading class="text-accent! dark:text-accent!" wire:navigate>
+                WM Car Rental
+            </flux:heading>
             <flux:sidebar.collapse
                 class="in-data-flux-sidebar-on-desktop:not-in-data-flux-sidebar-collapsed-desktop:-mr-2" />
         </flux:sidebar.header>
