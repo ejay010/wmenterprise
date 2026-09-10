@@ -16,8 +16,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     $vehicles = Vehicle::take(4)->get();
+
     return view('newLayout', compact('vehicles'));
 })->name('home');
+
+Route::view('/about', 'pages.about')->name('about');
+Route::view('/contact', 'pages.contact')->name('contact');
+Route::view('/rental-policy', 'pages.rental-policy')->name('rental-policy');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
@@ -47,7 +52,6 @@ Route::get('/agreements/{agreement}/pdf', function (RentalAgreement $agreement) 
 
     return $pdf->stream('agreement-'.$agreement->id.'.pdf');
 })->name('agreements.pdf');
-
 
 // New layout
 Route::view('/layout-test', 'newLayout');

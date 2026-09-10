@@ -6,24 +6,24 @@
 </head>
 
 <body class="min-h-screen bg-white dark:bg-zinc-800">
-    <flux:header sticky container
+    <flux:header container
         class="top-0 z-50 border-b border-zinc-100 bg-white/95 shadow-xs backdrop-blur-md mx-auto px-4 sm:px-6 lg:px-8 h-20">
         <flux:brand href="{{ route('home') }}" logo="{{ Vite::asset('resources/images/logo.png') }}"
             name="W Major Enterprises" wire:navigate class="text-accent" />
 
         <flux:spacer />
 
-        <flux:navbar class="items-center space-x-3">
+        <flux:navbar class="hidden md:flex items-center space-x-3">
             <flux:navbar.item :href="route('home')" :current="request()->routeIs('home')" wire:navigate>
                 {{ __('Home') }}
             </flux:navbar.item>
             <flux:navbar.item :href="route('catalog')" :current="request()->routeIs('catalog')" wire:navigate>
                 {{ __('Vehicles') }}
             </flux:navbar.item>
-            <flux:navbar.item wire:navigate>
+            <flux:navbar.item :href="route('about')" :current="request()->routeIs('about')" wire:navigate>
                 {{ __('About Us') }}
             </flux:navbar.item>
-            <flux:navbar.item wire:navigate>
+            <flux:navbar.item :href="route('contact')" :current="request()->routeIs('contact')" wire:navigate>
                 {{ __('Contact') }}
             </flux:navbar.item>
         </flux:navbar>
@@ -68,15 +68,29 @@
     </flux:header>
 
     <!-- Mobile Menu -->
-    <flux:sidebar collapsible="mobile" sticky
-        class="lg:hidden border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+    <flux:sidebar collapsible="mobile"
+        class="lg:hidden border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 z-50! w-full">
         <flux:sidebar.header>
             <x-app-logo :sidebar="true" />
             <flux:sidebar.collapse
                 class="in-data-flux-sidebar-on-desktop:not-in-data-flux-sidebar-collapsed-desktop:-mr-2" />
         </flux:sidebar.header>
 
-        <flux:spacer />
+        <flux:sidebar.nav>
+            <flux:sidebar.item :href="route('home')" :current="request()->routeIs('home')" wire:navigate>
+                {{ __('Home') }}
+            </flux:sidebar.item>
+            <flux:sidebar.item :href="route('catalog')" :current="request()->routeIs('catalog')" wire:navigate>
+                {{ __('Vehicles') }}
+            </flux:sidebar.item>
+            <flux:sidebar.item :href="route('about')" :current="request()->routeIs('about')" wire:navigate>
+                {{ __('About Us') }}
+            </flux:sidebar.item>
+            <flux:sidebar.item :href="route('contact')" :current="request()->routeIs('contact')" wire:navigate>
+                {{ __('Contact') }}
+            </flux:sidebar.item>
+        </flux:sidebar.nav>
+
 
     </flux:sidebar>
 
