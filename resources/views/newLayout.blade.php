@@ -301,8 +301,8 @@
                         <a href="{{ route('vehicle.show', ['vehicle' => $vehicle]) }}" wire:navigate>
                             <flux:card class="p-0 overflow-hidden flex flex-col">
                                 <div class=" overflow-hidden">
-                                    <img src="https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=600&q=80"
-                                        alt="Economy Car"
+                                    <img src="{{ $vehicle->featuredImage?->url ?? 'https://placehold.co/600x400?text=No+Image' }}"
+                                        alt="{{ $vehicle->title }}"
                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                 </div>
                             </flux:card>
