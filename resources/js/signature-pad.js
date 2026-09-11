@@ -38,7 +38,11 @@ document.addEventListener('alpine:init', () => {
         },
 
         stopDrawing() {
-            this.isDrawing = false;
+            if (this.isDrawing) {
+                this.isDrawing = false;
+                // Automatically persist the stroke into Livewire immediately to prevent race conditions on form submit
+                this.saveSignature();
+            }
         },
 
         clear() {

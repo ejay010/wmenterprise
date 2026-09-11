@@ -17,11 +17,13 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- wire:model automatically binds the input value to the component's property -->
+            <!-- Make and Model are the only required fields -->
             <flux:input wire:model="make" label="Make" placeholder="e.g. Toyota" required />
             <flux:input wire:model="model" label="Model" placeholder="e.g. Corolla" required />
-            <flux:input wire:model="year" type="number" label="Year" placeholder="2024" required />
-            <flux:input wire:model="color" label="Color" placeholder="e.g. Red" required />
-            <flux:select wire:model="class" label="Class" required>
+            <flux:input wire:model="year" type="number" label="Year" placeholder="2024" />
+            <flux:input wire:model="color" label="Color" placeholder="e.g. Red" />
+            <flux:select wire:model="class" label="Class" placeholder="Select Class (Optional)">
+                <flux:select.option value="">None / Not Specified</flux:select.option>
                 <flux:select.option value="SUV">SUV</flux:select.option>
                 <flux:select.option value="Sedan">Sedan</flux:select.option>
                 <flux:select.option value="Compact">Compact</flux:select.option>
@@ -30,17 +32,17 @@
                 <flux:select.option value="Mid-Size">Mid-Size</flux:select.option>
                 <flux:select.option value="Full-Size">Full-Size</flux:select.option>
             </flux:select>
-            <flux:input wire:model="max_passengers" type="number" label="Max Passengers" placeholder="4" required />
-            <flux:input wire:model="fuel_type" label="Fuel Type" placeholder="e.g. Gasoline" required />
-            <flux:input wire:model="gearbox" label="Gearbox" placeholder="e.g. Automatic" required />
-            <flux:input wire:model="license_plate" label="License Plate" placeholder="XYZ-1234" required />
+            <flux:input wire:model="max_passengers" type="number" label="Max Passengers" placeholder="4" />
+            <flux:input wire:model="fuel_type" label="Fuel Type" placeholder="e.g. Gasoline" />
+            <flux:input wire:model="gearbox" label="Gearbox" placeholder="e.g. Automatic" />
+            <flux:input wire:model="license_plate" label="License Plate" placeholder="XYZ-1234" />
 
             <div class="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- We allow numeric input for daily rate -->
+                <!-- Optional daily rate -->
                 <flux:input wire:model="daily_rate" type="number" step="0.01" label="Daily Rate ($)"
-                    placeholder="50.00" required />
+                    placeholder="50.00" />
 
-                <flux:select wire:model="status" label="Status" required>
+                <flux:select wire:model="status" label="Status">
                     <flux:select.option value="available">Available</flux:select.option>
                     <flux:select.option value="maintenance">In Maintenance</flux:select.option>
                 </flux:select>

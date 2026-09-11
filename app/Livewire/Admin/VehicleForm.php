@@ -90,56 +90,48 @@ class VehicleForm extends Component
      */
     public function save()
     {
-        // 1. Validate the user input to ensure data integrity
+        // 1. Validate the user input.
+        // Make and model are strictly required. All other specifications (year, color, rate, etc.) are optional.
         $this->validate([
             'make' => 'required|string|max:255',
             'model' => 'required|string|max:255',
-            'year' => 'required|integer|min:1900|max:'.(date('Y') + 1),
-            'color' => 'required|string|max:255',
-            'class' => 'required|string|max:255',
-            'max_passengers' => 'required|integer|min:1|max:100',
-            'fuel_type' => 'required|string|max:255',
-            'gearbox' => 'required|string|max:255',
-            'license_plate' => 'required|string|max:255',
-            'daily_rate' => 'required|numeric|min:0',
-            'status' => 'required|in:available,maintenance',
+            'year' => 'nullable|integer|min:1900|max:'.(date('Y') + 1),
+            'color' => 'nullable|string|max:255',
+            'class' => 'nullable|string|max:255',
+            'max_passengers' => 'nullable|integer|min:1|max:100',
+            'fuel_type' => 'nullable|string|max:255',
+            'gearbox' => 'nullable|string|max:255',
+            'license_plate' => 'nullable|string|max:255',
+            'daily_rate' => 'nullable|numeric|min:0',
+            'status' => 'nullable|in:available,maintenance',
             'description' => 'nullable|string',
             'new_images.*' => 'image|max:5120', // Ensure uploaded files are images (max 5MB)
         ]);
 
+        // Clean and prepare the data payload.
+        // If optional fields are blank, assign clean defaults or null to prevent database errors.
+        $vehicleData = [
+            'make' => $this->make,
+            'model' => $this->model,
+            'year' => $this->year ?: null,
+            'color' => $this->color ?: null,
+            'class' => $this->class ?: null,
+            'max_passengers' => $this->max_passengers ?: null,
+            'fuel_type' => $this->fuel_type ?: 'Gas',
+            'gearbox' => $this->gearbox ?: null,
+            'license_plate' => $this->license_plate ?: null,
+            'daily_rate' => $this->daily_rate ?: 0,
+            'status' => $this->status ?: 'available',
+            'description' => $this->description ?: null,
+        ];
+
         // 2. Save the primary Vehicle record
         if ($this->vehicle && $this->vehicle->exists) {
             // Update existing vehicle
-            $this->vehicle->update([
-                'make' => $this->make,
-                'model' => $this->model,
-                'year' => $this->year,
-                'color' => $this->color,
-                'class' => $this->class,
-                'max_passengers' => $this->max_passengers,
-                'fuel_type' => $this->fuel_type,
-                'gearbox' => $this->gearbox,
-                'license_plate' => $this->license_plate,
-                'daily_rate' => $this->daily_rate,
-                'status' => $this->status,
-                'description' => $this->description,
-            ]);
+            $this->vehicle->update($vehicleData);
         } else {
             // Create a new vehicle
-            $this->vehicle = Vehicle::create([
-                'make' => $this->make,
-                'model' => $this->model,
-                'year' => $this->year,
-                'color' => $this->color,
-                'class' => $this->class,
-                'max_passengers' => $this->max_passengers,
-                'fuel_type' => $this->fuel_type,
-                'gearbox' => $this->gearbox,
-                'license_plate' => $this->license_plate,
-                'daily_rate' => $this->daily_rate,
-                'status' => $this->status,
-                'description' => $this->description,
-            ]);
+            $this->vehicle = Vehicle::create($vehicleData);
         }
 
         // 3. Process newly uploaded image(s)

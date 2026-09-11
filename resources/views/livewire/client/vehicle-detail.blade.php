@@ -112,6 +112,8 @@
                 
                 <form wire:submit="continueToBooking" class="space-y-6"
                     x-data="{
+                        fpPickup: null,
+                        fpReturn: null,
                         unavailableRanges: @js($unavailableRanges),
                         init() {
                             const disabledConfig = this.unavailableRanges.map(r => ({
@@ -121,33 +123,71 @@
 
                             // Initialize Flatpickr on pickup input
                             if (window.flatpickr) {
-                                flatpickr(this.$refs.pickupInput, {
+                                this.fpPickup = flatpickr(this.$refs.pickupInput, {
                                     dateFormat: 'Y-m-d',
                                     minDate: 'today',
+                                    defaultDate: $wire.pickup_date,
                                     disable: disabledConfig,
                                     onChange: (selectedDates, dateStr) => {
-                                        $wire.set('pickup_date', dateStr);
+                                        if (dateStr) {
+                                            $wire.set('pickup_date', dateStr);
+
+                                            // Update return date minDate so return date must be strictly after pickup date
+                                            if (this.fpReturn && selectedDates[0]) {
+                                                const nextDay = new Date(selectedDates[0]);
+                                                nextDay.setDate(nextDay.getDate() + 1);
+                                                this.fpReturn.set('minDate', nextDay);
+                                            }
+                                        }
                                     }
                                 });
 
-                                flatpickr(this.$refs.returnInput, {
+                                // Calculate initial minDate for return picker (day after pickup date)
+                                const initialPickupDate = $wire.pickup_date ? new Date($wire.pickup_date + 'T00:00:00') : new Date();
+                                const initialReturnMin = new Date(initialPickupDate);
+                                initialReturnMin.setDate(initialReturnMin.getDate() + 1);
+
+                                this.fpReturn = flatpickr(this.$refs.returnInput, {
                                     dateFormat: 'Y-m-d',
-                                    minDate: 'today',
+                                    minDate: initialReturnMin,
+                                    defaultDate: $wire.return_date,
                                     disable: disabledConfig,
                                     onChange: (selectedDates, dateStr) => {
-                                        $wire.set('return_date', dateStr);
+                                        if (dateStr) {
+                                            $wire.set('return_date', dateStr);
+                                        }
+                                    }
+                                });
+
+                                // Watch Livewire properties so server-side adjustments update flatpickr displays
+                                this.$watch('$wire.pickup_date', (value) => {
+                                    if (this.fpPickup && value && this.fpPickup.input.value !== value) {
+                                        this.fpPickup.setDate(value, false);
+                                    }
+                                });
+
+                                this.$watch('$wire.return_date', (value) => {
+                                    if (this.fpReturn && value && this.fpReturn.input.value !== value) {
+                                        this.fpReturn.setDate(value, false);
                                     }
                                 });
                             }
+                        },
+                        destroy() {
+                            if (this.fpPickup) this.fpPickup.destroy();
+                            if (this.fpReturn) this.fpReturn.destroy();
                         }
                     }">
                     
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Pick-up Date</label>
-                            <input type="text" x-ref="pickupInput" wire:model.live="pickup_date"
-                                class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                placeholder="Select pick-up date" required />
+                            <!-- wire:ignore prevents Livewire's DOM morpher from destroying the Flatpickr instance -->
+                            <div wire:ignore>
+                                <input type="text" x-ref="pickupInput"
+                                    class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
+                                    placeholder="Select pick-up date" readonly required />
+                            </div>
                             @error('pickup_date')
                                 <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
                             @enderror
@@ -155,9 +195,12 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Return Date</label>
-                            <input type="text" x-ref="returnInput" wire:model.live="return_date"
-                                class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                                placeholder="Select return date" required />
+                            <!-- wire:ignore prevents Livewire's DOM morpher from destroying the Flatpickr instance -->
+                            <div wire:ignore>
+                                <input type="text" x-ref="returnInput"
+                                    class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
+                                    placeholder="Select return date" readonly required />
+                            </div>
                             @error('return_date')
                                 <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
                             @enderror

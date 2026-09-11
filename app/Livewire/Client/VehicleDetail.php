@@ -31,26 +31,47 @@ class VehicleDetail extends Component
 
     /**
      * Called when the component is mounted (initialized).
+     * If the user previously selected dates and navigated back from checkout, we restore them.
      */
     public function mount(Vehicle $vehicle)
     {
         $this->vehicle = $vehicle;
 
-        // Set initial default dates
-        $this->pickup_date = Carbon::tomorrow()->format('Y-m-d');
-        $this->return_date = Carbon::tomorrow()->addDays(2)->format('Y-m-d');
+        // Restore previously selected dates from session if available, or fall back to defaults (tomorrow to +2 days)
+        $this->pickup_date = session('booking_pickup_date', Carbon::tomorrow()->format('Y-m-d'));
+        $this->return_date = session('booking_return_date', Carbon::tomorrow()->addDays(2)->format('Y-m-d'));
 
         // Calculate the initial quote and check availability
         $this->calculateQuote();
     }
 
     /**
-     * This magic Livewire method is triggered automatically whenever ANY property is updated.
-     * We use it to recalculate the quote if the user changes the dates.
+     * This Livewire lifecycle hook is triggered automatically whenever a property is updated.
+     * When the pickup date changes, we ensure the return date stays at least 1 day in the future
+     * to avoid zero-day calculations and user lockout.
      */
     public function updated($property)
     {
-        if (in_array($property, ['pickup_date', 'return_date'])) {
+        if ($property === 'pickup_date') {
+            if ($this->pickup_date) {
+                try {
+                    $start = Carbon::parse($this->pickup_date)->startOfDay();
+                    if ($this->return_date) {
+                        $end = Carbon::parse($this->return_date)->startOfDay();
+                        // If the return date is on or before the pickup date, automatically advance it to the next day
+                        if ($end->lessThanOrEqualTo($start)) {
+                            $this->return_date = $start->copy()->addDay()->format('Y-m-d');
+                        }
+                    } else {
+                        $this->return_date = $start->copy()->addDay()->format('Y-m-d');
+                    }
+                } catch (\Exception $e) {
+                    // Handled gracefully in calculateQuote
+                }
+            }
+            $this->resetErrorBag();
+            $this->calculateQuote();
+        } elseif ($property === 'return_date') {
             $this->resetErrorBag();
             $this->calculateQuote();
         }
@@ -71,10 +92,11 @@ class VehicleDetail extends Component
 
                 // Ensure the return date is after the pick up date
                 if ($end->greaterThan($start)) {
-                    $this->days = $start->diffInDays($end);
-                    $this->total_estimate = $this->days * $this->vehicle->daily_rate;
+                    $this->days = (int) $start->diffInDays($end);
+                    $dailyRate = (float) ($this->vehicle->daily_rate ?? 0);
+                    $this->total_estimate = $this->days * $dailyRate;
 
-                    // Check availability for these dates
+                    // Check availability for these dates against bookings and blackout dates
                     if (! $this->vehicle->isAvailableForDates($this->pickup_date, $this->return_date)) {
                         $this->is_available = false;
                         $this->availability_message = 'This vehicle is not available for the selected dates (already booked or blacked out). Please select different dates.';
