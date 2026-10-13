@@ -133,7 +133,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>W Major Enterprises</h1>
+            <h1>WM Car Rental</h1>
             <span class="badge">Website Contact Form Submission</span>
         </div>
 
@@ -181,7 +181,7 @@
 
         <!-- Direct Actions -->
         <div class="action-buttons">
-            <a href="mailto:{{ $senderEmail }}?subject=Re: Your inquiry with W Major Enterprises" class="btn">
+            <a href="mailto:{{ $senderEmail }}?subject=Re: Your inquiry with WM Car Rental" class="btn">
                 Reply via Email
             </a>
             @if ($senderPhone)
@@ -192,7 +192,7 @@
         </div>
 
         <div class="footer">
-            <p>W Major Enterprises Car Rental &bull; Rock Sound, Eleuthera, Bahamas &bull; (242) 376-1454</p>
+            <p>WM Car Rental &bull; Rock Sound, Eleuthera, Bahamas &bull; (242) 376-1454</p>
             <p>This automated message was sent from your website's contact form.</p>
         </div>
     </div>

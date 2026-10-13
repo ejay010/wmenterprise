@@ -9,7 +9,7 @@
 
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <span class="inline-block text-xs font-extrabold uppercase tracking-widest text-[#ed6f7c] mb-3 bg-white/80 backdrop-blur-xs px-3.5 py-1 rounded-full shadow-xs">
-                W Major Enterprises
+                WM Car Rental
             </span>
             <h1 class="text-4xl sm:text-5xl font-extrabold text-zinc-900 tracking-tight leading-[1.15] mb-4">
                 Rental Policy & Guidelines
@@ -171,7 +171,7 @@
                 </div>
                 <div class="text-sm text-zinc-600 leading-relaxed space-y-3 pt-2">
                     <p>
-                        W Major Enterprises maintains all mandatory automobile liability insurance required by law in the Commonwealth of the Bahamas.
+                        WM Car Rental (W Major Enterprises) maintains all mandatory automobile liability insurance required by law in the Commonwealth of the Bahamas.
                     </p>
                     <p>
                         <strong>Limited Power of Attorney:</strong> By signing the rental agreement, the renter grants the company a Limited Power of Attorney to present insurance claims for property damage to the renter's insurance carrier if the vehicle is damaged during the rental period.

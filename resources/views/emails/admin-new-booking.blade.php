@@ -129,7 +129,7 @@
         </div>
 
         <div class="footer">
-            <p>&copy; {{ date('Y') }} W Major Enterprises Admin Notification System.</p>
+            <p>&copy; {{ date('Y') }} WM Car Rental Admin Notification System.</p>
         </div>
     </div>
 </body>

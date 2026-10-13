@@ -1,2 +1,14 @@
 User-agent: *
-Disallow:
+Allow: /
+Allow: /catalog
+Allow: /vehicle/
+Allow: /about
+Allow: /contact
+Allow: /rental-policy
+Disallow: /admin/
+Disallow: /checkout/
+Disallow: /booking/thank-you/
+Disallow: /dashboard/
+Disallow: /settings/
+
+Sitemap: http://wmcarrental.test/sitemap.xml

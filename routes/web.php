@@ -53,5 +53,14 @@ Route::get('/agreements/{agreement}/pdf', function (RentalAgreement $agreement) 
     return $pdf->stream('agreement-'.$agreement->id.'.pdf');
 })->name('agreements.pdf');
 
-// New layout
-Route::view('/layout-test', 'newLayout');
+// Dynamic XML Sitemap
+Route::get('/sitemap.xml', function () {
+    $vehicles = Vehicle::where('status', 'available')->get();
+
+    return response()
+        ->view('sitemap', compact('vehicles'))
+        ->header('Content-Type', 'text/xml');
+})->name('sitemap');
+
+// Legacy test route
+Route::redirect('/layout-test', '/');

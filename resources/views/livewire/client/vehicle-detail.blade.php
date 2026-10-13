@@ -13,6 +13,27 @@
     }
 @endphp
 
+<!-- Schema.org Structured Data for Vehicle Product & Offer -->
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => ['Vehicle', 'Product'],
+    'name' => "{$vehicle->make} {$vehicle->model}",
+    'image' => $imageUrls[0],
+    'description' => $vehicle->description ?? 'Rent this clean, reliable vehicle in Eleuthera with WM Car Rental.',
+    'vehicleConfiguration' => $vehicle->class,
+    'vehicleTransmission' => $vehicle->gearbox,
+    'vehicleSeatingCapacity' => (int) ($vehicle->max_passengers ?? 5),
+    'offers' => [
+        '@type' => 'Offer',
+        'price' => (string) $vehicle->daily_rate,
+        'priceCurrency' => 'USD',
+        'availability' => $vehicle->status === 'available' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        'url' => route('vehicle.show', $vehicle),
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+
 <div x-data="{
         isOpen: false,
         currentIndex: 0,
@@ -78,7 +99,7 @@
 
             <!-- Vehicle Info -->
             <div class="bg-white dark:bg-zinc-800 rounded-2xl p-8 border border-zinc-200 dark:border-zinc-700">
-                <flux:heading size="2xl" class="mb-4">{{ $vehicle->year }} {{ $vehicle->make }} {{ $vehicle->model }}</flux:heading>
+                <flux:heading size="2xl" class="mb-4">{{ $vehicle->make }} {{ $vehicle->model }}</flux:heading>
                 
                 <div class="prose dark:prose-invert max-w-none text-zinc-600 dark:text-zinc-400">
                     <p>{{ $vehicle->description ?? 'No detailed description provided for this vehicle.' }}</p>
@@ -255,7 +276,7 @@
             <!-- Modal Header (Close button & Counter) -->
             <div class="flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent z-10">
                 <div class="text-sm font-medium text-zinc-300">
-                    {{ $vehicle->year }} {{ $vehicle->make }} {{ $vehicle->model }}
+                    {{ $vehicle->make }} {{ $vehicle->model }}
                     <span class="mx-2 text-zinc-500">•</span>
                     <span x-text="(currentIndex + 1) + ' of ' + images.length"></span>
                 </div>

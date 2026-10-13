@@ -20,7 +20,7 @@
                 <div>
                     <h3 class="font-bold text-base text-emerald-950">Message Sent Successfully!</h3>
                     <p class="text-xs sm:text-sm text-emerald-800 mt-1 leading-relaxed">
-                        Thank you for reaching out to W Major Enterprises. Your inquiry has been forwarded directly to our administrator's inbox. We will get back to you promptly.
+                        Thank you for reaching out to WM Car Rental. Your inquiry has been forwarded directly to our administrator's inbox. We will get back to you promptly.
                     </p>
                     <p class="text-xs text-emerald-700 mt-2">
                         Need immediate assistance? You can also reach us directly at <a href="tel:242-376-1454" class="font-bold underline">(242) 376-1454</a>.

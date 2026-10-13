@@ -172,7 +172,7 @@
                         <img src="{{ $imagePath }}" class="w-full h-full object-cover">
                     </div>
                     <div>
-                        <div class="font-bold text-zinc-900 dark:text-white">{{ $vehicle->year }} {{ $vehicle->make }}
+                        <div class="font-bold text-zinc-900 dark:text-white">{{ $vehicle->make }}
                             {{ $vehicle->model }}</div>
                         <div class="text-sm text-zinc-500">{{ $days }} days rental</div>
                     </div>

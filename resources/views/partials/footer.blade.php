@@ -5,8 +5,8 @@
             <!-- Column 1: Brand & Socials (4 cols) -->
             <div class="lg:col-span-4 space-y-5">
                 <img src="{{ Vite::asset('resources/images/logo.png') }}" class="rounded w-32"
-                    alt="W Major Enterprises">
-                <flux:heading size="xl" class="text-accent">W Major Enterprises</flux:heading>
+                    alt="WM Car Rental">
+                <flux:heading size="xl" class="text-accent">WM Car Rental</flux:heading>
 
                 <p class="text-xs text-white max-w-sm leading-relaxed">
                     Your adventure starts here. Quality cars. Great prices. Island experiences you'll cherish
@@ -97,7 +97,7 @@
         <!-- Bottom Copyright & Legal Row -->
         <div class="pt-8 border-t border-[#ed6f7c] flex flex-col sm:flex-row items-center justify-between text-[11px] text-white gap-4">
             <div>
-                &copy; {{ date('Y') }} W Major Enterprises Car Rental. All rights reserved.
+                &copy; {{ date('Y') }} WM Car Rental. All rights reserved.
             </div>
             <div class="flex space-x-6">
                 <a href="{{ route('rental-policy') }}" class="hover:text-white transition" wire:navigate>Privacy & Terms</a>

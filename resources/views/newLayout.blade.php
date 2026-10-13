@@ -1,6 +1,43 @@
 <x-layouts::app.header>
-    <!-- ========================================== -->
-    <!-- 2. HERO SECTION                           -->
+    <!-- Schema.org Structured Data for Local Auto Rental Business -->
+    <script type="application/ld+json">
+    {!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'AutoRental',
+        'name' => 'WM Car Rental',
+        'legalName' => 'W Major Enterprises',
+        'url' => route('home'),
+        'logo' => asset('apple-touch-icon.png'),
+        'image' => Vite::asset('resources/images/glass-window-bridge.jpg'),
+        'telephone' => '+1-242-376-1454',
+        'priceRange' => '$$',
+        'address' => [
+            '@type' => 'PostalAddress',
+            'streetAddress' => 'Rock Sound',
+            'addressLocality' => 'Eleuthera',
+            'addressCountry' => 'BS',
+        ],
+        'geo' => [
+            '@type' => 'GeoCoordinates',
+            'latitude' => 24.9000,
+            'longitude' => -76.1667,
+        ],
+        'areaServed' => [
+            [
+                '@type' => 'Airport',
+                'name' => 'Rock Sound International Airport (RSD)',
+            ],
+            [
+                '@type' => 'Airport',
+                'name' => "Governor's Harbour International Airport (GHB)",
+            ],
+            [
+                '@type' => 'Place',
+                'name' => 'Eleuthera, Bahamas',
+            ],
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    </script>
     <!-- ========================================== -->
     <section
         class="relative bg-gradient-to-r from-sky-100 via-teal-50 to-blue-100 pt-16 pb-36 lg:pt-24 lg:pb-48 overflow-hidden">
@@ -298,163 +335,49 @@
 
                     <!-- Vehicle Card 1: Economy -->
                     @foreach ($vehicles as $vehicle)
-                        <a href="{{ route('vehicle.show', ['vehicle' => $vehicle]) }}" wire:navigate>
-                            <flux:card class="p-0 overflow-hidden flex flex-col">
-                                <div class=" overflow-hidden">
+                        <a href="{{ route('vehicle.show', ['vehicle' => $vehicle]) }}" wire:navigate class="group block">
+                            <flux:card class="p-0 overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow">
+                                <div class="aspect-4/3 relative overflow-hidden bg-zinc-100">
                                     <img src="{{ $vehicle->featuredImage?->url ?? 'https://placehold.co/600x400?text=No+Image' }}"
-                                        alt="{{ $vehicle->title }}"
+                                        alt="{{ $vehicle->make }} {{ $vehicle->model }}"
                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                </div>
+                                <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <h3 class="font-bold text-lg text-[#0a192f]">{{ $vehicle->make }} {{ $vehicle->model }}</h3>
+                                        <div class="text-right whitespace-nowrap">
+                                            <span class="text-xs text-zinc-400 font-medium">From </span>
+                                            <span class="text-sm font-extrabold text-[#007f8c]">${{ number_format($vehicle->daily_rate, 0) }}</span>
+                                            <span class="text-xs text-zinc-400"> / day</span>
+                                        </div>
+                                    </div>
+                                    <div class="pt-3 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-500 font-medium">
+                                        <div class="flex items-center gap-1.5">
+                                            <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                            <span>{{ $vehicle->max_passengers ?? 5 }} Seats</span>
+                                        </div>
+                                        @if($vehicle->class)
+                                            <div class="flex items-center gap-1.5">
+                                                <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                                </svg>
+                                                <span>{{ $vehicle->class }}</span>
+                                            </div>
+                                        @endif
+                                        <div class="flex items-center gap-1.5">
+                                            <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            <span>{{ $vehicle->gearbox ?? 'Auto' }}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </flux:card>
                         </a>
                     @endforeach
-
-                    {{-- <!-- Vehicle Card 2: Midsize -->
-                    <div
-                        class="bg-white rounded-2xl border border-zinc-200/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group">
-                        <div class="aspect-4/3 relative overflow-hidden bg-zinc-100">
-                            <img src="https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=600&q=80"
-                                alt="Midsize Sedan"
-                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        </div>
-                        <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
-                            <div class="flex items-center justify-between">
-                                <h3 class="font-bold text-lg text-[#0a192f]">Midsize</h3>
-                                <div class="text-right">
-                                    <span class="text-xs text-zinc-400 font-medium">From </span>
-                                    <span class="text-sm font-extrabold text-[#007f8c]">$60</span>
-                                    <span class="text-xs text-zinc-400"> / day</span>
-                                </div>
-                            </div>
-                            <div
-                                class="pt-3 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-500 font-medium">
-                                <div class="flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                    <span>5 Seats</span>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                    </svg>
-                                    <span>2 Bags</span>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    <span>Auto</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Vehicle Card 3: SUV -->
-                    <div
-                        class="bg-white rounded-2xl border border-zinc-200/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group">
-                        <div class="aspect-4/3 relative overflow-hidden bg-zinc-100">
-                            <img src="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=600&q=80"
-                                alt="SUV"
-                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        </div>
-                        <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
-                            <div class="flex items-center justify-between">
-                                <h3 class="font-bold text-lg text-[#0a192f]">SUV</h3>
-                                <div class="text-right">
-                                    <span class="text-xs text-zinc-400 font-medium">From </span>
-                                    <span class="text-sm font-extrabold text-[#007f8c]">$85</span>
-                                    <span class="text-xs text-zinc-400"> / day</span>
-                                </div>
-                            </div>
-                            <div
-                                class="pt-3 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-500 font-medium">
-                                <div class="flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                    <span>7 Seats</span>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                    </svg>
-                                    <span>3 Bags</span>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    <span>Auto</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Vehicle Card 4: Van -->
-                    <div
-                        class="bg-white rounded-2xl border border-zinc-200/80 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group">
-                        <div class="aspect-4/3 relative overflow-hidden bg-zinc-100">
-                            <img src="https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=600&q=80"
-                                alt="Passenger Van"
-                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        </div>
-                        <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
-                            <div class="flex items-center justify-between">
-                                <h3 class="font-bold text-lg text-[#0a192f]">Van</h3>
-                                <div class="text-right">
-                                    <span class="text-xs text-zinc-400 font-medium">From </span>
-                                    <span class="text-sm font-extrabold text-[#007f8c]">$110</span>
-                                    <span class="text-xs text-zinc-400"> / day</span>
-                                </div>
-                            </div>
-                            <div
-                                class="pt-3 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-500 font-medium">
-                                <div class="flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                    <span>12 Seats</span>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                    </svg>
-                                    <span>4 Bags</span>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    <span>Auto</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div> --}}
 
                 </div>
 

@@ -34,7 +34,7 @@ class AdminContactInquiryMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New Contact Inquiry from '.$this->senderName.' - W Major Enterprises',
+            subject: 'New Contact Inquiry from '.$this->senderName.' - WM Car Rental',
             replyTo: [
                 new Address($this->senderEmail, $this->senderName),
             ],

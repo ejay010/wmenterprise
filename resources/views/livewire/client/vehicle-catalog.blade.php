@@ -43,7 +43,7 @@
                 <div class="p-6 flex-grow flex flex-col justify-between">
                     <div>
                         <h3 class="text-xl font-bold text-zinc-900 dark:text-white">
-                            {{ $vehicle->year }} {{ $vehicle->make }} {{ $vehicle->model }}
+                            {{ $vehicle->make }} {{ $vehicle->model }}
                         </h3>
                         <!-- A truncated description -->
                         <p class="mt-2 text-zinc-500 dark:text-zinc-400 line-clamp-2">

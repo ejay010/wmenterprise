@@ -1,6 +1,6 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "WM Car Rental",
+  "short_name": "WM Rental",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

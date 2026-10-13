@@ -45,7 +45,7 @@
             </div>
 
             <div class="font-bold text-lg text-zinc-900 dark:text-white">
-                {{ $order->vehicle->year }} {{ $order->vehicle->make }} {{ $order->vehicle->model }}
+                {{ $order->vehicle->make }} {{ $order->vehicle->model }}
             </div>
             <div class="text-sm text-zinc-500 mt-1 capitalize">
                 {{ $order->vehicle->class }} • {{ $order->vehicle->fuel_type }}

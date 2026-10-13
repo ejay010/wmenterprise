@@ -69,7 +69,7 @@
     <div class="container">
         <div class="header">
             <h1>Booking Confirmed!</h1>
-            <p style="margin: 5px 0 0 0; color: #52525b;">Thank you for renting with W Major Enterprises</p>
+            <p style="margin: 5px 0 0 0; color: #52525b;">Thank you for renting with WM Car Rental</p>
         </div>
 
         <p>Dear {{ $agreement->first_name }} {{ $agreement->last_name }},</p>
@@ -80,8 +80,7 @@
         <div class="summary-box">
             <h3 style="margin-top: 0; color: #18181b;">Reservation Summary</h3>
             <p><strong>Order #:</strong> {{ $order->id }}</p>
-            <p><strong>Vehicle:</strong> {{ $agreement->vehicle->year }} {{ $agreement->vehicle->make }}
-                {{ $agreement->vehicle->model }}</p>
+            <p><strong>Vehicle:</strong> {{ $agreement->vehicle->make }} {{ $agreement->vehicle->model }}</p>
             <p><strong>Pickup:</strong> {{ $agreement->pickup_date }} at {{ $agreement->pickup_time }}
                 ({{ $agreement->pickup_location }})</p>
             <p><strong>Return:</strong> {{ $agreement->return_date }} at {{ $agreement->return_time }}
@@ -92,10 +91,10 @@
         <p>If you have any questions or need to make changes to your pickup schedule, please contact our customer
             service team at any time.</p>
 
-        <p>Safe travels,<br><strong>W Major Enterprises Team</strong></p>
+        <p>Safe travels,<br><strong>WM Car Rental Team</strong></p>
 
         <div class="footer">
-            <p>&copy; {{ date('Y') }} W Major Enterprises. All rights reserved.</p>
+            <p>&copy; {{ date('Y') }} WM Car Rental. All rights reserved.</p>
         </div>
     </div>
 </body>

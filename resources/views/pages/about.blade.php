@@ -12,7 +12,7 @@
                 Rooted in Eleuthera
             </span>
             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-zinc-900 tracking-tight leading-[1.15] mb-4">
-                About W Major Enterprises
+                About WM Car Rental
             </h1>
             <p class="text-base sm:text-lg text-zinc-700 max-w-2xl mx-auto font-normal leading-relaxed">
                 Locally owned, island-operated, and dedicated to delivering a seamless, stress-free car rental experience across beautiful Eleuthera.
@@ -34,7 +34,7 @@
                         Explore Eleuthera with Confidence & Comfort
                     </h2>
                     <p class="text-sm sm:text-base text-zinc-600 leading-relaxed">
-                        Welcome to <strong>W Major Enterprises Car Rental</strong>, based in Rock Sound, Eleuthera. We founded our rental business with one clear mission: to make exploring our slender 110-mile island as effortless, safe, and enjoyable as possible for travelers, vacationers, and locals alike.
+                        Welcome to <strong>WM Car Rental</strong>, operated by W Major Enterprises and based in Rock Sound, Eleuthera. We founded our rental business with one clear mission: to make exploring our slender 110-mile island as effortless, safe, and enjoyable as possible for travelers, vacationers, and locals alike.
                     </p>
                     <p class="text-sm sm:text-base text-zinc-600 leading-relaxed">
                         Whether you are landing at <strong>Rock Sound International Airport (RSD)</strong> or <strong>Governor's Harbour International Airport (GHB)</strong>, we ensure your vehicle is waiting, thoroughly inspected, and ready to take you from the pink sand beaches in the north to the quiet settlements and surf spots in the south.
@@ -168,7 +168,7 @@
                 Ready to Experience Eleuthera?
             </h2>
             <p class="text-sm sm:text-base text-zinc-600 max-w-xl mx-auto">
-                Select your travel dates, choose your ideal car or SUV, and lock in your reservation with W Major Enterprises today.
+                Select your travel dates, choose your ideal car or SUV, and lock in your reservation with WM Car Rental today.
             </p>
             <div class="pt-2">
                 <a href="{{ route('catalog') }}" wire:navigate

@@ -3,7 +3,7 @@
 test('about page renders successfully', function () {
     $this->get(route('about'))
         ->assertOk()
-        ->assertSee('About W Major Enterprises')
+        ->assertSee('About WM Car Rental')
         ->assertSee('Rock Sound');
 });
 
