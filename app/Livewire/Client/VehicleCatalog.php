@@ -10,6 +10,24 @@ use Livewire\Component;
  */
 class VehicleCatalog extends Component
 {
+    /**
+     * Capture search criteria from the homepage booking widget (GET parameters)
+     * and persist them into the session so when a user selects a vehicle,
+     * their selected dates and locations are preserved.
+     */
+    public function mount()
+    {
+        if (request()->filled('pickup_date')) {
+            session([
+                'booking_pickup_date' => request('pickup_date'),
+                'booking_return_date' => request('return_date'),
+                'booking_pickup_location' => request('location'),
+                'booking_pickup_time' => request('pickup_time'),
+                'booking_return_time' => request('return_time'),
+            ]);
+        }
+    }
+
     public function render()
     {
         // Fetch only vehicles that are 'available'. We eager load the 'images' relationship

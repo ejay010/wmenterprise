@@ -37,9 +37,9 @@ class VehicleDetail extends Component
     {
         $this->vehicle = $vehicle;
 
-        // Restore previously selected dates from session if available, or fall back to defaults (tomorrow to +2 days)
-        $this->pickup_date = session('booking_pickup_date', Carbon::tomorrow()->format('Y-m-d'));
-        $this->return_date = session('booking_return_date', Carbon::tomorrow()->addDays(2)->format('Y-m-d'));
+        // Restore previously selected dates from request query or session if available, or fall back to defaults (tomorrow to +2 days)
+        $this->pickup_date = request('pickup_date', session('booking_pickup_date', Carbon::tomorrow()->format('Y-m-d')));
+        $this->return_date = request('return_date', session('booking_return_date', Carbon::tomorrow()->addDays(2)->format('Y-m-d')));
 
         // Calculate the initial quote and check availability
         $this->calculateQuote();
@@ -119,10 +119,15 @@ class VehicleDetail extends Component
      */
     public function continueToBooking()
     {
-        // 1. Validate dates are selected and valid
+        // 1. Validate dates are selected and valid in Bahamas local time (where rentals operate)
+        $todayBahamas = Carbon::now('America/Nassau')->format('Y-m-d');
+
         $this->validate([
-            'pickup_date' => 'required|date|after_or_equal:today',
+            'pickup_date' => 'required|date|after_or_equal:'.$todayBahamas,
             'return_date' => 'required|date|after:pickup_date',
+        ], [
+            'pickup_date.after_or_equal' => 'The pick-up date must be today or a future date.',
+            'return_date.after' => 'The return date must be at least one day after the pick-up date.',
         ]);
 
         // 2. Enforce availability check

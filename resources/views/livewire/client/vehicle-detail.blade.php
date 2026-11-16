@@ -136,6 +136,14 @@
                         fpPickup: null,
                         fpReturn: null,
                         unavailableRanges: @js($unavailableRanges),
+                        parseYmd(str) {
+                            if (!str) return new Date();
+                            const parts = str.split('-');
+                            if (parts.length === 3) {
+                                return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                            }
+                            return new Date(str);
+                        },
                         init() {
                             const disabledConfig = this.unavailableRanges.map(r => ({
                                 from: r.from,
@@ -149,6 +157,7 @@
                                     minDate: 'today',
                                     defaultDate: $wire.pickup_date,
                                     disable: disabledConfig,
+                                    disableMobile: true,
                                     onChange: (selectedDates, dateStr) => {
                                         if (dateStr) {
                                             $wire.set('pickup_date', dateStr);
@@ -163,8 +172,8 @@
                                     }
                                 });
 
-                                // Calculate initial minDate for return picker (day after pickup date)
-                                const initialPickupDate = $wire.pickup_date ? new Date($wire.pickup_date + 'T00:00:00') : new Date();
+                                // Calculate initial minDate for return picker (day after pickup date) safely without timezone shifting
+                                const initialPickupDate = this.parseYmd($wire.pickup_date);
                                 const initialReturnMin = new Date(initialPickupDate);
                                 initialReturnMin.setDate(initialReturnMin.getDate() + 1);
 
@@ -173,6 +182,7 @@
                                     minDate: initialReturnMin,
                                     defaultDate: $wire.return_date,
                                     disable: disabledConfig,
+                                    disableMobile: true,
                                     onChange: (selectedDates, dateStr) => {
                                         if (dateStr) {
                                             $wire.set('return_date', dateStr);
@@ -206,6 +216,7 @@
                             <!-- wire:ignore prevents Livewire's DOM morpher from destroying the Flatpickr instance -->
                             <div wire:ignore>
                                 <input type="text" x-ref="pickupInput"
+                                    value="{{ $pickup_date }}"
                                     class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
                                     placeholder="Select pick-up date" readonly required />
                             </div>
@@ -219,6 +230,7 @@
                             <!-- wire:ignore prevents Livewire's DOM morpher from destroying the Flatpickr instance -->
                             <div wire:ignore>
                                 <input type="text" x-ref="returnInput"
+                                    value="{{ $return_date }}"
                                     class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
                                     placeholder="Select return date" readonly required />
                             </div>
@@ -252,9 +264,16 @@
                         <div class="text-xs text-red-500 font-medium">Please select a valid date range (at least 1 day).</div>
                     @endif
 
-                    <!-- Submit Button -->
-                    <flux:button type="submit" variant="primary" class="w-full" :disabled="$days <= 0 || ! $is_available">
-                        Continue to Booking
+                    <!-- Submit Button with Livewire Loading Feedback -->
+                    <flux:button type="submit" variant="primary" class="w-full relative" :disabled="$days <= 0 || ! $is_available" wire:loading.attr="disabled">
+                        <span wire:loading.remove>Continue to Booking</span>
+                        <span wire:loading class="inline-flex items-center justify-center gap-2">
+                            <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Checking Availability...</span>
+                        </span>
                     </flux:button>
                 </form>
             </div>

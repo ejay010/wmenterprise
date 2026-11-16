@@ -12,6 +12,7 @@ use App\Models\Vehicle;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -107,26 +108,41 @@ class Checkout extends Component
     public function processBooking()
     {
         // 1. Comprehensive Validation to ensure all required fields are present
-        $this->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'date_of_birth' => 'required|date|before:today',
-            'drivers_license' => 'required|string|max:255',
-            'drivers_license_image' => 'nullable|image|max:10240',
-            'address' => 'required|string|max:1000',
-            'email' => 'required|email|max:255',
-            'phone' => 'required|string|max:255',
-            'pickup_location' => 'required|string',
-            'pickup_time' => 'required|string',
-            'return_location' => 'required|string',
-            'return_time' => 'required|string',
-            'payment_type' => 'required|in:Cash,Credit Card,Direct Deposit',
-            'bank_receipt_image' => 'required_if:payment_type,Direct Deposit|nullable|image|max:10240',
-            'bank_transaction_number' => 'required_if:payment_type,Direct Deposit|nullable|string|max:255',
-            'agreed_to_terms' => 'accepted', // Must be true/1/on
-            'renter_name' => 'required|string|max:255',
-            'renter_signature' => 'required|string', // Base64 image data
-        ]);
+        try {
+            $this->validate([
+                'first_name' => 'required|string|max:255',
+                'last_name' => 'required|string|max:255',
+                'date_of_birth' => 'required|date|before:today',
+                'drivers_license' => 'required|string|max:255',
+                'drivers_license_image' => 'nullable|image|max:10240',
+                'address' => 'required|string|max:1000',
+                'email' => 'required|email|max:255',
+                'phone' => 'required|string|max:255',
+                'pickup_location' => 'required|string',
+                'pickup_time' => 'required|string',
+                'return_location' => 'required|string',
+                'return_time' => 'required|string',
+                'payment_type' => 'required|in:Cash,Credit Card,Direct Deposit',
+                'bank_receipt_image' => 'required_if:payment_type,Direct Deposit|nullable|image|max:10240',
+                'bank_transaction_number' => 'required_if:payment_type,Direct Deposit|nullable|string|max:255',
+                'agreed_to_terms' => 'accepted', // Must be true/1/on
+                'renter_name' => 'required|string|max:255',
+                'renter_signature' => 'required|string', // Base64 image data
+            ], [
+                'renter_signature.required' => 'Please provide your digital signature before confirming.',
+                'agreed_to_terms.accepted' => 'You must agree to the rental terms and conditions.',
+                'date_of_birth.before' => 'Please enter a valid date of birth.',
+                'bank_receipt_image.required_if' => 'Please upload a screenshot of your direct deposit receipt.',
+                'bank_transaction_number.required_if' => 'Please enter your bank transfer reference number.',
+            ]);
+        } catch (ValidationException $e) {
+            \Flux::toast(
+                text: 'Please check the form for missing or invalid details.',
+                variant: 'danger',
+                heading: 'Incomplete Information'
+            );
+            throw $e;
+        }
 
         $licenseImagePath = null;
         if ($this->drivers_license_image) {
@@ -150,82 +166,94 @@ class Checkout extends Component
         // 3. Database Transaction
         // We use a database transaction to ensure that if something fails (e.g. payment issue),
         // we don't end up with partial data in the database. It's an all-or-nothing operation.
-        DB::transaction(function () use (&$order, &$agreement, $licenseImagePath) {
+        try {
+            DB::transaction(function () use (&$order, &$agreement, $licenseImagePath) {
 
-            $totalDue = $this->total_estimate + $this->deposit;
+                $totalDue = $this->total_estimate + $this->deposit;
 
-            // Step A: Create the Order
-            $order = Order::create([
-                'user_id' => auth()->id(),
-                'vehicle_id' => $this->vehicle->id,
-                'guest_first_name' => $this->first_name,
-                'guest_last_name' => $this->last_name,
-                'guest_email' => $this->email,
-                'guest_phone' => $this->phone,
-                'start_date' => $this->pickup_date,
-                'end_date' => $this->return_date,
-                'total_amount' => $totalDue,
-                'status' => 'confirmed',
-            ]);
+                // Step A: Create the Order
+                $order = Order::create([
+                    'user_id' => auth()->id(),
+                    'vehicle_id' => $this->vehicle->id,
+                    'guest_first_name' => $this->first_name,
+                    'guest_last_name' => $this->last_name,
+                    'guest_email' => $this->email,
+                    'guest_phone' => $this->phone,
+                    'start_date' => $this->pickup_date,
+                    'end_date' => $this->return_date,
+                    'total_amount' => $totalDue,
+                    'status' => 'confirmed',
+                ]);
 
-            // Step B: Create the formal Rental Agreement matching the PDF structure
-            $agreement = RentalAgreement::create([
-                'order_id' => $order->id,
-                'user_id' => auth()->id(),
-                'vehicle_id' => $this->vehicle->id,
+                // Step B: Create the formal Rental Agreement matching the PDF structure
+                $agreement = RentalAgreement::create([
+                    'order_id' => $order->id,
+                    'user_id' => auth()->id(),
+                    'vehicle_id' => $this->vehicle->id,
 
-                'first_name' => $this->first_name,
-                'last_name' => $this->last_name,
-                'date_of_birth' => $this->date_of_birth,
-                'drivers_license' => $this->drivers_license,
-                'drivers_license_image' => $licenseImagePath,
-                'address' => $this->address,
-                'email' => $this->email,
-                'phone' => $this->phone,
+                    'first_name' => $this->first_name,
+                    'last_name' => $this->last_name,
+                    'date_of_birth' => $this->date_of_birth,
+                    'drivers_license' => $this->drivers_license,
+                    'drivers_license_image' => $licenseImagePath,
+                    'address' => $this->address,
+                    'email' => $this->email,
+                    'phone' => $this->phone,
 
-                'pickup_location' => $this->pickup_location,
-                'pickup_date' => $this->pickup_date,
-                'pickup_time' => $this->pickup_time,
-                'return_location' => $this->return_location,
-                'return_date' => $this->return_date,
-                'return_time' => $this->return_time,
+                    'pickup_location' => $this->pickup_location,
+                    'pickup_date' => $this->pickup_date,
+                    'pickup_time' => $this->pickup_time,
+                    'return_location' => $this->return_location,
+                    'return_date' => $this->return_date,
+                    'return_time' => $this->return_time,
 
-                'price_per_day' => $this->vehicle->daily_rate,
-                'deposit' => $this->deposit,
-                'total_due' => $totalDue,
-                'payment_type' => $this->payment_type,
+                    'price_per_day' => $this->vehicle->daily_rate,
+                    'deposit' => $this->deposit,
+                    'total_due' => $totalDue,
+                    'payment_type' => $this->payment_type,
 
-                'agreed_to_terms' => $this->agreed_to_terms,
-                'renter_name' => $this->renter_name,
-                'renter_signature' => $this->renter_signature,
+                    'agreed_to_terms' => $this->agreed_to_terms,
+                    'renter_name' => $this->renter_name,
+                    'renter_signature' => $this->renter_signature,
 
-                // Company rep will sign later, or we leave it blank for the PDF
-                'company_representative_name' => null,
-                'company_signature' => null,
-                'signed_at' => now(),
-                'status' => 'completed',
-            ]);
+                    // Company rep will sign later, or we leave it blank for the PDF
+                    'company_representative_name' => null,
+                    'company_signature' => null,
+                    'signed_at' => now(),
+                    'status' => 'completed',
+                ]);
 
-            // Process Direct Deposit Receipt Image
-            $receiptImagePath = null;
-            if ($this->payment_type === 'Direct Deposit' && $this->bank_receipt_image) {
-                $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
-                $receiptImagePath = $this->bank_receipt_image->store('receipts', $disk);
-            }
+                // Process Direct Deposit Receipt Image
+                $receiptImagePath = null;
+                if ($this->payment_type === 'Direct Deposit' && $this->bank_receipt_image) {
+                    $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
+                    $receiptImagePath = $this->bank_receipt_image->store('receipts', $disk);
+                }
 
-            // Step C: Simulate Payment Gateway processing (Mock)
-            // In a real app, you would call the PowerTranz API here and wait for a success response
-            Transaction::create([
-                'order_id' => $order->id,
-                'amount' => $totalDue,
-                'payment_method' => $this->payment_type,
-                'gateway_reference' => $this->payment_type === 'Direct Deposit' ? $this->bank_transaction_number : 'MOCK-PTZ-'.uniqid(),
-                'status' => $this->payment_type === 'Direct Deposit' ? 'pending_verification' : 'successful',
-                'bank_receipt_image' => $receiptImagePath,
-                'bank_transaction_number' => $this->bank_transaction_number,
-            ]);
+                // Step C: Simulate Payment Gateway processing (Mock)
+                // In a real app, you would call the PowerTranz API here and wait for a success response
+                Transaction::create([
+                    'order_id' => $order->id,
+                    'amount' => $totalDue,
+                    'payment_method' => $this->payment_type,
+                    'gateway_reference' => $this->payment_type === 'Direct Deposit' ? $this->bank_transaction_number : 'MOCK-PTZ-'.uniqid(),
+                    'status' => $this->payment_type === 'Direct Deposit' ? 'pending_verification' : 'successful',
+                    'bank_receipt_image' => $receiptImagePath,
+                    'bank_transaction_number' => $this->bank_transaction_number,
+                ]);
 
-        });
+            });
+        } catch (\Throwable $e) {
+            Log::error('Reservation processing failed: '.$e->getMessage());
+            \Flux::toast(
+                text: 'An unexpected system error occurred while processing your booking. Please try again or contact us directly.',
+                variant: 'danger',
+                heading: 'Booking Failed'
+            );
+            $this->addError('payment_type', 'System error while saving reservation. Please try again.');
+
+            return;
+        }
 
         // Save license photo to registered user account for future rentals
         if (auth()->check() && $licenseImagePath) {
