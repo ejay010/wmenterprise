@@ -13,27 +13,6 @@
     }
 @endphp
 
-<!-- Schema.org Structured Data for Vehicle Product & Offer -->
-<script type="application/ld+json">
-{!! json_encode([
-    '@context' => 'https://schema.org',
-    '@type' => ['Vehicle', 'Product'],
-    'name' => "{$vehicle->make} {$vehicle->model}",
-    'image' => $imageUrls[0],
-    'description' => $vehicle->description ?? 'Rent this clean, reliable vehicle in Eleuthera with WM Car Rental.',
-    'vehicleConfiguration' => $vehicle->class,
-    'vehicleTransmission' => $vehicle->gearbox,
-    'vehicleSeatingCapacity' => (int) ($vehicle->max_passengers ?? 5),
-    'offers' => [
-        '@type' => 'Offer',
-        'price' => (string) $vehicle->daily_rate,
-        'priceCurrency' => 'USD',
-        'availability' => $vehicle->status === 'available' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-        'url' => route('vehicle.show', $vehicle),
-    ],
-], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
-</script>
-
 <div x-data="{
         isOpen: false,
         currentIndex: 0,
@@ -368,4 +347,25 @@
             </div>
         </div>
     </template>
+
+    <!-- Schema.org Structured Data for Vehicle Product & Offer -->
+    <script type="application/ld+json">
+    {!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => ['Vehicle', 'Product'],
+        'name' => "{$vehicle->make} {$vehicle->model}",
+        'image' => $imageUrls[0],
+        'description' => $vehicle->description ?? 'Rent this clean, reliable vehicle in Eleuthera with WM Car Rental.',
+        'vehicleConfiguration' => $vehicle->class,
+        'vehicleTransmission' => $vehicle->gearbox,
+        'vehicleSeatingCapacity' => (int) ($vehicle->max_passengers ?? 5),
+        'offers' => [
+            '@type' => 'Offer',
+            'price' => (string) $vehicle->daily_rate,
+            'priceCurrency' => 'USD',
+            'availability' => $vehicle->status === 'available' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            'url' => route('vehicle.show', $vehicle),
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    </script>
 </div>
