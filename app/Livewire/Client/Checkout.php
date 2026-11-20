@@ -9,6 +9,7 @@ use App\Models\RentalAgreement;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Vehicle;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -74,6 +75,10 @@ class Checkout extends Component
 
     public $deposit = 0;
 
+    public $is_available = true;
+
+    public $availability_message = null;
+
     public function mount(Vehicle $vehicle)
     {
         $this->vehicle = $vehicle;
@@ -100,6 +105,82 @@ class Checkout extends Component
             $this->last_name = $names[1] ?? '';
             $this->email = $user->email;
         }
+
+        // Initial check to ensure dates are valid and available
+        $this->recalculateQuote();
+    }
+
+    /**
+     * This Livewire lifecycle hook is triggered automatically whenever a property is updated.
+     * When the pickup or return date changes, we recalculate the rental quote and verify availability.
+     */
+    public function updated($property)
+    {
+        if ($property === 'pickup_date') {
+            if ($this->pickup_date) {
+                try {
+                    $start = Carbon::parse($this->pickup_date)->startOfDay();
+                    if ($this->return_date) {
+                        $end = Carbon::parse($this->return_date)->startOfDay();
+                        // If return date is on or before pickup date, automatically advance it to the next day
+                        if ($end->lessThanOrEqualTo($start)) {
+                            $this->return_date = $start->copy()->addDay()->format('Y-m-d');
+                        }
+                    } else {
+                        $this->return_date = $start->copy()->addDay()->format('Y-m-d');
+                    }
+                } catch (\Exception $e) {
+                    // Handled gracefully in recalculateQuote
+                }
+            }
+            $this->resetErrorBag(['pickup_date', 'return_date']);
+            $this->recalculateQuote();
+        } elseif ($property === 'return_date') {
+            $this->resetErrorBag(['pickup_date', 'return_date']);
+            $this->recalculateQuote();
+        }
+    }
+
+    /**
+     * Recalculate duration in days and multiply by the vehicle daily rate.
+     * Also checks for blackout or booking conflicts in real time.
+     */
+    public function recalculateQuote(): void
+    {
+        $this->is_available = true;
+        $this->availability_message = null;
+
+        if ($this->pickup_date && $this->return_date) {
+            try {
+                $start = Carbon::parse($this->pickup_date)->startOfDay();
+                $end = Carbon::parse($this->return_date)->startOfDay();
+
+                if ($end->greaterThan($start)) {
+                    $this->days = (int) $start->diffInDays($end);
+                    $dailyRate = (float) ($this->vehicle->daily_rate ?? 0);
+                    $this->total_estimate = $this->days * $dailyRate;
+
+                    if (! $this->vehicle->isAvailableForDates($this->pickup_date, $this->return_date)) {
+                        $this->is_available = false;
+                        $this->availability_message = 'This vehicle is not available for the selected dates (already booked or blacked out). Please select different dates.';
+                    } else {
+                        // Keep session in sync with the latest dates and estimate
+                        session([
+                            'booking_pickup_date' => $this->pickup_date,
+                            'booking_return_date' => $this->return_date,
+                            'booking_days' => $this->days,
+                            'booking_estimate' => $this->total_estimate,
+                        ]);
+                    }
+                } else {
+                    $this->days = 0;
+                    $this->total_estimate = 0;
+                }
+            } catch (\Exception $e) {
+                $this->days = 0;
+                $this->total_estimate = 0;
+            }
+        }
     }
 
     /**
@@ -118,8 +199,10 @@ class Checkout extends Component
                 'address' => 'required|string|max:1000',
                 'email' => 'required|email|max:255',
                 'phone' => 'required|string|max:255',
+                'pickup_date' => 'required|date|after_or_equal:today',
                 'pickup_location' => 'required|string',
                 'pickup_time' => 'required|string',
+                'return_date' => 'required|date|after:pickup_date',
                 'return_location' => 'required|string',
                 'return_time' => 'required|string',
                 'payment_type' => 'required|in:Cash,Credit Card,Direct Deposit',
@@ -129,6 +212,8 @@ class Checkout extends Component
                 'renter_name' => 'required|string|max:255',
                 'renter_signature' => 'required|string', // Base64 image data
             ], [
+                'return_date.after' => 'The return date must be at least one day after the pick-up date.',
+                'pickup_date.after_or_equal' => 'The pick-up date cannot be in the past.',
                 'renter_signature.required' => 'Please provide your digital signature before confirming.',
                 'agreed_to_terms.accepted' => 'You must agree to the rental terms and conditions.',
                 'date_of_birth.before' => 'Please enter a valid date of birth.',
@@ -293,6 +378,8 @@ class Checkout extends Component
 
     public function render()
     {
-        return view('livewire.client.checkout')->layout('layouts.client');
+        return view('livewire.client.checkout', [
+            'unavailableRanges' => $this->vehicle->getUnavailableDateRanges(),
+        ])->layout('layouts.client');
     }
 }

@@ -136,26 +136,46 @@
                         fpPickup: null,
                         fpReturn: null,
                         unavailableRanges: @js($unavailableRanges),
-                        parseYmd(str) {
-                            if (!str) return new Date();
+                        safeParseDate(val) {
+                            if (!val) return new Date();
+                            if (val instanceof Date) return val;
+                            const str = String(val).trim();
                             const parts = str.split('-');
                             if (parts.length === 3) {
-                                return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                                const y = parseInt(parts[0], 10);
+                                const m = parseInt(parts[1], 10) - 1;
+                                const d = parseInt(parts[2], 10);
+                                if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+                                    return new Date(y, m, d);
+                                }
                             }
-                            return new Date(str);
+                            const parsed = new Date(str);
+                            return isNaN(parsed.getTime()) ? new Date() : parsed;
                         },
                         init() {
-                            const disabledConfig = this.unavailableRanges.map(r => ({
-                                from: r.from,
-                                to: r.to
-                            }));
+                            const initPickers = () => {
+                                if (!window.flatpickr) {
+                                    setTimeout(initPickers, 50);
+                                    return;
+                                }
 
-                            // Initialize Flatpickr on pickup input
-                            if (window.flatpickr) {
-                                this.fpPickup = flatpickr(this.$refs.pickupInput, {
+                                const pickupEl = this.$refs.pickupInput;
+                                const returnEl = this.$refs.returnInput;
+                                if (!pickupEl || !returnEl) return;
+
+                                const initialPickupStr = pickupEl.value || @js($pickup_date);
+                                const initialReturnStr = returnEl.value || @js($return_date);
+
+                                const disabledConfig = (this.unavailableRanges || []).map(r => ({
+                                    from: r.from,
+                                    to: r.to
+                                }));
+
+                                // Initialize Flatpickr on pickup input
+                                this.fpPickup = flatpickr(pickupEl, {
                                     dateFormat: 'Y-m-d',
                                     minDate: 'today',
-                                    defaultDate: $wire.pickup_date,
+                                    defaultDate: initialPickupStr,
                                     disable: disabledConfig,
                                     disableMobile: true,
                                     onChange: (selectedDates, dateStr) => {
@@ -172,15 +192,19 @@
                                     }
                                 });
 
-                                // Calculate initial minDate for return picker (day after pickup date) safely without timezone shifting
-                                const initialPickupDate = this.parseYmd($wire.pickup_date);
-                                const initialReturnMin = new Date(initialPickupDate);
+                                // Calculate initial minDate for return picker (day after pickup date)
+                                const baseDate = (this.fpPickup && this.fpPickup.selectedDates[0])
+                                    ? new Date(this.fpPickup.selectedDates[0])
+                                    : this.safeParseDate(initialPickupStr);
+
+                                const initialReturnMin = new Date(baseDate);
                                 initialReturnMin.setDate(initialReturnMin.getDate() + 1);
 
-                                this.fpReturn = flatpickr(this.$refs.returnInput, {
+                                // Initialize Flatpickr on return input
+                                this.fpReturn = flatpickr(returnEl, {
                                     dateFormat: 'Y-m-d',
                                     minDate: initialReturnMin,
-                                    defaultDate: $wire.return_date,
+                                    defaultDate: initialReturnStr,
                                     disable: disabledConfig,
                                     disableMobile: true,
                                     onChange: (selectedDates, dateStr) => {
@@ -192,30 +216,34 @@
 
                                 // Watch Livewire properties so server-side adjustments update flatpickr displays
                                 this.$watch('$wire.pickup_date', (value) => {
-                                    if (this.fpPickup && value && this.fpPickup.input.value !== value) {
-                                        this.fpPickup.setDate(value, false);
+                                    if (this.fpPickup && value) {
+                                        const strVal = String(value);
+                                        if (this.fpPickup.input.value !== strVal) {
+                                            this.fpPickup.setDate(strVal, false);
+                                        }
                                     }
                                 });
 
                                 this.$watch('$wire.return_date', (value) => {
-                                    if (this.fpReturn && value && this.fpReturn.input.value !== value) {
-                                        this.fpReturn.setDate(value, false);
+                                    if (this.fpReturn && value) {
+                                        const strVal = String(value);
+                                        if (this.fpReturn.input.value !== strVal) {
+                                            this.fpReturn.setDate(strVal, false);
+                                        }
                                     }
                                 });
-                            }
-                        },
-                        destroy() {
-                            if (this.fpPickup) this.fpPickup.destroy();
-                            if (this.fpReturn) this.fpReturn.destroy();
+                            };
+
+                            initPickers();
                         }
                     }">
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Pick-up Date</label>
+                            <label for="detail_pickup_date" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Pick-up Date</label>
                             <!-- wire:ignore prevents Livewire's DOM morpher from destroying the Flatpickr instance -->
                             <div wire:ignore>
-                                <input type="text" x-ref="pickupInput"
+                                <input type="text" id="detail_pickup_date" x-ref="pickupInput"
                                     value="{{ $pickup_date }}"
                                     class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
                                     placeholder="Select pick-up date" readonly required />
@@ -226,10 +254,10 @@
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Return Date</label>
+                            <label for="detail_return_date" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Return Date</label>
                             <!-- wire:ignore prevents Livewire's DOM morpher from destroying the Flatpickr instance -->
                             <div wire:ignore>
-                                <input type="text" x-ref="returnInput"
+                                <input type="text" id="detail_return_date" x-ref="returnInput"
                                     value="{{ $return_date }}"
                                     class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
                                     placeholder="Select return date" readonly required />

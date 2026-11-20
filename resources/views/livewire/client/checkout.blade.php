@@ -73,8 +73,119 @@
             </section>
 
             <!-- Section 2: Logistics -->
+            <!--
+              We initialize Flatpickr date pickers on both Pick-up and Return date inputs
+              so customers can activate and change their dates directly during checkout.
+              When dates change, Livewire dynamically recalculates the duration, estimate,
+              and verifies availability against any blackout or existing booking dates.
+            -->
             <section
-                class="bg-white dark:bg-zinc-800 p-8 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-sm">
+                class="bg-white dark:bg-zinc-800 p-8 rounded-2xl border border-zinc-200 dark:border-zinc-700 shadow-sm"
+                x-data="{
+                    fpPickup: null,
+                    fpReturn: null,
+                    unavailableRanges: @js($unavailableRanges),
+                    safeParseDate(val) {
+                        if (!val) return new Date();
+                        if (val instanceof Date) return val;
+                        const str = String(val).trim();
+                        const parts = str.split('-');
+                        if (parts.length === 3) {
+                            const y = parseInt(parts[0], 10);
+                            const m = parseInt(parts[1], 10) - 1;
+                            const d = parseInt(parts[2], 10);
+                            if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+                                return new Date(y, m, d);
+                            }
+                        }
+                        const parsed = new Date(str);
+                        return isNaN(parsed.getTime()) ? new Date() : parsed;
+                    },
+                    init() {
+                        const initPickers = () => {
+                            if (!window.flatpickr) {
+                                setTimeout(initPickers, 50);
+                                return;
+                            }
+
+                            const pickupEl = this.$refs.pickupInput;
+                            const returnEl = this.$refs.returnInput;
+                            if (!pickupEl || !returnEl) return;
+
+                            const initialPickupStr = pickupEl.value || @js($pickup_date);
+                            const initialReturnStr = returnEl.value || @js($return_date);
+
+                            const disabledConfig = (this.unavailableRanges || []).map(r => ({
+                                from: r.from,
+                                to: r.to
+                            }));
+
+                            // Initialize Flatpickr on pickup input
+                            this.fpPickup = flatpickr(pickupEl, {
+                                dateFormat: 'Y-m-d',
+                                minDate: 'today',
+                                defaultDate: initialPickupStr,
+                                disable: disabledConfig,
+                                disableMobile: true,
+                                onChange: (selectedDates, dateStr) => {
+                                    if (dateStr) {
+                                        $wire.set('pickup_date', dateStr);
+
+                                        // Update return date minDate so return date must be strictly after pickup date
+                                        if (this.fpReturn && selectedDates[0]) {
+                                            const nextDay = new Date(selectedDates[0]);
+                                            nextDay.setDate(nextDay.getDate() + 1);
+                                            this.fpReturn.set('minDate', nextDay);
+                                        }
+                                    }
+                                }
+                            });
+
+                            // Calculate initial minDate for return picker (day after pickup date)
+                            const baseDate = (this.fpPickup && this.fpPickup.selectedDates[0])
+                                ? new Date(this.fpPickup.selectedDates[0])
+                                : this.safeParseDate(initialPickupStr);
+
+                            const initialReturnMin = new Date(baseDate);
+                            initialReturnMin.setDate(initialReturnMin.getDate() + 1);
+
+                            // Initialize Flatpickr on return input
+                            this.fpReturn = flatpickr(returnEl, {
+                                dateFormat: 'Y-m-d',
+                                minDate: initialReturnMin,
+                                defaultDate: initialReturnStr,
+                                disable: disabledConfig,
+                                disableMobile: true,
+                                onChange: (selectedDates, dateStr) => {
+                                    if (dateStr) {
+                                        $wire.set('return_date', dateStr);
+                                    }
+                                }
+                            });
+
+                            // Watch Livewire properties so server-side adjustments update flatpickr displays
+                            this.$watch('$wire.pickup_date', (value) => {
+                                if (this.fpPickup && value) {
+                                    const strVal = String(value);
+                                    if (this.fpPickup.input.value !== strVal) {
+                                        this.fpPickup.setDate(strVal, false);
+                                    }
+                                }
+                            });
+
+                            this.$watch('$wire.return_date', (value) => {
+                                if (this.fpReturn && value) {
+                                    const strVal = String(value);
+                                    if (this.fpReturn.input.value !== strVal) {
+                                        this.fpReturn.setDate(strVal, false);
+                                    }
+                                }
+                            });
+                        };
+
+                        initPickers();
+                    }
+                }">
                 <flux:heading size="xl" class="mb-6">Pick Up & Return</flux:heading>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -91,9 +202,18 @@
                         </flux:select>
 
                         <div class="grid grid-cols-2 gap-4">
-                            <!-- We disable the date picker here since it was chosen on the previous screen -->
-                            <flux:input value="{{ \Carbon\Carbon::parse($pickup_date)->format('M d, Y') }}"
-                                label="Date" disabled />
+                            <div>
+                                <label for="checkout_pickup_date" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Date</label>
+                                <div wire:ignore>
+                                    <input type="text" id="checkout_pickup_date" x-ref="pickupInput"
+                                        value="{{ $pickup_date }}"
+                                        class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
+                                        placeholder="Select pick-up date" readonly required />
+                                </div>
+                                @error('pickup_date')
+                                    <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                                @enderror
+                            </div>
                             <flux:input type="time" wire:model="pickup_time" label="Time" required />
                         </div>
                     </div>
@@ -111,12 +231,29 @@
                         </flux:select>
 
                         <div class="grid grid-cols-2 gap-4">
-                            <flux:input value="{{ \Carbon\Carbon::parse($return_date)->format('M d, Y') }}"
-                                label="Date" disabled />
+                            <div>
+                                <label for="checkout_return_date" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Date</label>
+                                <div wire:ignore>
+                                    <input type="text" id="checkout_return_date" x-ref="returnInput"
+                                        value="{{ $return_date }}"
+                                        class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
+                                        placeholder="Select return date" readonly required />
+                                </div>
+                                @error('return_date')
+                                    <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span>
+                                @enderror
+                            </div>
                             <flux:input type="time" wire:model="return_time" label="Time" required />
                         </div>
                     </div>
                 </div>
+
+                @if(! $is_available && $availability_message)
+                    <div class="mt-6 p-4 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm flex items-start gap-2">
+                        <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <span>{{ $availability_message }}</span>
+                    </div>
+                @endif
             </section>
 
             <!-- Section 3: Terms & Signature -->
@@ -240,7 +377,7 @@
                   and update the Livewire property ($wire.set) before it submits.
                   We add wire:loading states to disable the button and show a spinner while saving.
                 -->
-                <flux:button type="submit" variant="primary" class="w-full relative" @click="$dispatch('save_signature')" wire:loading.attr="disabled">
+                <flux:button type="submit" variant="primary" class="w-full relative" @click="$dispatch('save_signature')" wire:loading.attr="disabled" :disabled="$days <= 0 || ! $is_available">
                     <span wire:loading.remove>Confirm & Pay</span>
                     <span wire:loading class="inline-flex items-center justify-center gap-2">
                         <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">

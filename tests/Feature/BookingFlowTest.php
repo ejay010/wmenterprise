@@ -3,6 +3,7 @@
 use App\Livewire\Client\Checkout;
 use App\Livewire\Client\VehicleDetail;
 use App\Mail\RentalConfirmationMail;
+use App\Models\BlackoutDate;
 use App\Models\Order;
 use App\Models\RentalAgreement;
 use App\Models\User;
@@ -143,4 +144,66 @@ it('allows a user to upload a driver license image during checkout', function ()
     $agreement = RentalAgreement::first();
     $this->assertNotNull($agreement->drivers_license_image);
     $this->assertNotNull($user->fresh()->drivers_license_image);
+});
+
+it('allows modifying return date directly on checkout and recalculates estimate and total', function () {
+    $vehicle = Vehicle::factory()->create(['status' => 'available', 'daily_rate' => 100]);
+
+    $initialPickup = now()->addDay()->format('Y-m-d');
+    $initialReturn = now()->addDays(3)->format('Y-m-d');
+
+    session([
+        'booking_pickup_date' => $initialPickup,
+        'booking_return_date' => $initialReturn,
+        'booking_estimate' => 200,
+        'booking_days' => 2,
+    ]);
+
+    $component = Livewire::test(Checkout::class, ['vehicle' => $vehicle])
+        ->assertSet('days', 2)
+        ->assertSet('total_estimate', 200)
+        ->assertSet('is_available', true);
+
+    // Now user changes return date on checkout to 5 days from today (4 rental days)
+    $newReturn = now()->addDays(5)->format('Y-m-d');
+
+    $component->set('return_date', $newReturn)
+        ->assertSet('return_date', $newReturn)
+        ->assertSet('days', 4)
+        ->assertSet('total_estimate', 400)
+        ->assertSet('is_available', true);
+
+    expect(session('booking_return_date'))->toBe($newReturn);
+    expect(session('booking_days'))->toBe(4);
+    expect((float) session('booking_estimate'))->toBe(400.00);
+});
+
+it('prevents completing checkout if dates overlap with blackout dates', function () {
+    $vehicle = Vehicle::factory()->create(['status' => 'available', 'daily_rate' => 100]);
+
+    // Create a blackout date for next week
+    BlackoutDate::create([
+        'vehicle_id' => $vehicle->id,
+        'start_date' => now()->addDays(4)->format('Y-m-d'),
+        'end_date' => now()->addDays(7)->format('Y-m-d'),
+        'reason' => 'Scheduled Maintenance',
+    ]);
+
+    session([
+        'booking_pickup_date' => now()->addDay()->format('Y-m-d'),
+        'booking_return_date' => now()->addDays(3)->format('Y-m-d'),
+        'booking_estimate' => 200,
+        'booking_days' => 2,
+    ]);
+
+    $component = Livewire::test(Checkout::class, ['vehicle' => $vehicle])
+        ->assertSet('is_available', true);
+
+    // Extending return date into the blackout period
+    $blackoutReturn = now()->addDays(5)->format('Y-m-d');
+
+    $component->set('return_date', $blackoutReturn)
+        ->assertSet('is_available', false);
+
+    expect($component->get('availability_message'))->not->toBeNull();
 });
